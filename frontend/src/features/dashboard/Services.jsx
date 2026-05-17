@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { X, ShieldAlert, Plane, Car, FileText, Landmark, RefreshCw, AlertCircle, MessageSquare, Search, Zap, Award } from 'lucide-react';
+import { X, ShieldAlert, Plane, Car, FileText, Landmark, RefreshCw, AlertCircle, MessageSquare, Search, Zap, Award, Star, CheckCircle } from 'lucide-react';
+
+const GithubIcon = ({ className }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    stroke="currentColor" 
+    strokeWidth="2.5" 
+    fill="none" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path d="M9 18c-4.51 2-5-2-7-2" />
+  </svg>
+);
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null); // 'driving' | 'flight' | 'grievance' | 'factcheck' | 'bypass'
@@ -28,6 +43,79 @@ const Services = () => {
   const [goldState, setGoldState] = useState('form'); // 'form' | 'loading' | 'assigned'
   const [goldStep, setGoldStep] = useState(0);
   const [potatoCount, setPotatoCount] = useState(0);
+
+  // GitHub mandatory star and Maa Kasam compliance states
+  const [pendingService, setPendingService] = useState(null);
+  const [showStarModal, setShowStarModal] = useState(false);
+  const [starModalStage, setStarModalStage] = useState('projects'); // 'projects' | 'kasam'
+  const [starCountdown, setStarCountdown] = useState(5);
+  const [hasSworn, setHasSworn] = useState(false);
+
+  // MAPPING: ONE SPECIFIC REPO BEFORE ONE SERVICE
+  const SERVICE_PROJECT_MAP = {
+    driving: {
+      id: 'moodify',
+      title: 'Moodify',
+      description: 'Real-time emotion detection music platform that uses webcam-based facial analysis to detect your mood and play matching music.',
+      url: 'https://github.com/mannatgupta146/Moodify.git'
+    },
+    flight: {
+      id: 'manos',
+      title: 'ManOS.dev',
+      description: 'A macOS-inspired interactive portfolio experience built with React and Vite featuringdraggable windows, notification chimes, and responsive interactions.',
+      url: 'https://github.com/mannatgupta146/ManOS.dev.git'
+    },
+    grievance: {
+      id: 'manclarity',
+      title: 'Manclarity AI',
+      description: 'An AI-powered search and knowledge assistant inspired by Perplexity with live intelligent responses and discoverability.',
+      url: 'https://github.com/mannatgupta146/Manclarity-AI.git'
+    },
+    gold: {
+      id: 'mindgraph',
+      title: 'MindGraph',
+      description: 'A cognitive operating system creating a Neural Link between your browser and a centralized knowledge vault.',
+      url: 'https://github.com/mannatgupta146/MindGraph.git'
+    },
+    factcheck: {
+      id: 'dogstudio',
+      title: 'Dog Studio Clone',
+      description: 'A visually immersive and motion-heavy Three.js and GSAP scroll cinematic web experience cloned to perfection.',
+      url: 'https://github.com/mannatgupta146/Dog-Studio.git'
+    },
+    bypass: {
+      id: 'buildex',
+      title: 'Buildex',
+      description: 'An AI-powered application generator platform inspired by Lovable focused on accelerated product prototyping.',
+      url: 'https://github.com/mannatgupta146/Buildex.git'
+    }
+  };
+
+  // Helper to play notification sound
+  const playTing = () => {
+    const audio = new Audio('/service/ting.mp3');
+    audio.play().catch((err) => console.log('Audio error:', err));
+  };
+
+  const handleServiceClick = (service) => {
+    playTing();
+    setPendingService(service);
+    setShowStarModal(true);
+    setStarModalStage('projects');
+    setStarCountdown(5);
+    setHasSworn(false);
+
+    // Decrement countdown timer every second
+    const interval = setInterval(() => {
+      setStarCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const handleOpenService = (service) => {
     setSelectedService(service);
@@ -130,7 +218,6 @@ const Services = () => {
     setGrievanceState('loading');
     setLoadingStep(0);
     
-    // Simulate loading steps sequentially
     setTimeout(() => {
       setLoadingStep(1);
     }, 1500);
@@ -203,7 +290,7 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Driving License Service */}
             <button 
-              onClick={() => handleOpenService('driving')}
+              onClick={() => handleServiceClick('driving')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-red-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -227,7 +314,7 @@ const Services = () => {
 
             {/* Flight Ticket Booking */}
             <button 
-              onClick={() => handleOpenService('flight')}
+              onClick={() => handleServiceClick('flight')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-amber-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -251,7 +338,7 @@ const Services = () => {
 
             {/* Report Public Grievance */}
             <button 
-              onClick={() => handleOpenService('grievance')}
+              onClick={() => handleServiceClick('grievance')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-orange-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -275,7 +362,7 @@ const Services = () => {
 
             {/* Gold Investment */}
             <button 
-              onClick={() => handleOpenService('gold')}
+              onClick={() => handleServiceClick('gold')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-amber-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -299,7 +386,7 @@ const Services = () => {
 
             {/* Report Systemic Corruption (Modi video) */}
             <button 
-              onClick={() => handleOpenService('factcheck')}
+              onClick={() => handleServiceClick('factcheck')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-red-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden animate-pulse"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -323,7 +410,7 @@ const Services = () => {
 
             {/* Express Queue Bypass (Gandhi video) */}
             <button 
-              onClick={() => handleOpenService('bypass')}
+              onClick={() => handleServiceClick('bypass')}
               className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-orange-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -1425,6 +1512,171 @@ const Services = () => {
           </div>
         </div>
       )}
+
+      {/* GitHub Star Compliance Modal Pop-Up */}
+      {showStarModal && (() => {
+        const activeProject = pendingService ? SERVICE_PROJECT_MAP[pendingService] : null;
+        return (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl overflow-y-auto">
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes slideInAndRotateAbnormal {
+                0% {
+                  transform: translateX(120vw) rotate(360deg) scale(0.3);
+                  opacity: 0;
+                }
+                35% {
+                  transform: translateX(60vw) rotate(-180deg) scale(0.6);
+                  opacity: 0.5;
+                }
+                65% {
+                  transform: translateX(20vw) rotate(90deg) scale(0.85);
+                  opacity: 0.8;
+                }
+                88% {
+                  transform: translateX(-6vw) rotate(-12deg) scale(1.04);
+                  opacity: 0.95;
+                }
+                100% {
+                  transform: translateX(0) rotate(0deg) scale(1);
+                  opacity: 1;
+                }
+              }
+              .animate-popup-slide-rotate {
+                animation: slideInAndRotateAbnormal 1.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+              }
+            `}} />
+            <div className="w-full max-w-4xl bg-slate-950 border-4 border-orange-500 rounded-2xl overflow-hidden shadow-2xl flex flex-col font-mono animate-popup-slide-rotate">
+              {/* Header banner */}
+              <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-4 sm:p-5 border-b-4 border-orange-800 text-center relative">
+                <h3 className="font-black uppercase tracking-widest text-sm sm:text-base text-white animate-pulse flex items-center justify-center gap-2">
+                  <span>⚠️</span> DIGITAL CITIZEN MANDATORY ENCOURAGEMENT PROTOCOL
+                </h3>
+                <p className="text-[10px] sm:text-xs text-orange-100 uppercase font-black tracking-wider mt-1">
+                  Section 42: Star Mannat Gupta's Project to Unlock This Service
+                </p>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
+                {starModalStage === 'projects' ? (
+                  <>
+                    <div className="bg-[#020617] border border-orange-950/60 p-4 rounded-xl text-left space-y-2">
+                      <p className="text-orange-400 font-black text-xs uppercase tracking-wide">
+                        🔒 SERVICE LOCKED — STAR REQUIRED:
+                      </p>
+                      <p className="text-gray-300 text-[11px] sm:text-xs leading-relaxed uppercase">
+                        In accordance with centralized digital suffering mandates, you must deposit exactly ONE star on the repository listed below to unlock the selected service card. Verification is fully automated.
+                      </p>
+                    </div>
+
+                    {/* Single Centered Project Card */}
+                    {activeProject && (
+                      <div className="w-full max-w-xl mx-auto bg-[#0b0f19] border-2 border-orange-500 rounded-xl p-6 transition-all duration-300 flex flex-col justify-between group text-center relative overflow-hidden shadow-[0_0_30px_rgba(249,115,22,0.15)]">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-full pointer-events-none animate-pulse"></div>
+                        <div className="flex justify-between items-start mb-4">
+                          <h4 className="font-black text-white text-lg sm:text-xl group-hover:text-orange-400 transition-colors uppercase">
+                            {activeProject.title}
+                          </h4>
+                          <span className="text-[10px] font-mono text-orange-400 border border-orange-950 bg-orange-950/20 px-2.5 py-0.5 rounded font-black uppercase tracking-wider">
+                            ⭐ REQUIRED TARGET
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 font-mono leading-relaxed mb-6 uppercase">
+                          {activeProject.description}
+                        </p>
+                        
+                        <a 
+                          href={activeProject.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full max-w-sm mx-auto bg-slate-900 hover:bg-orange-950/30 text-orange-400 hover:text-white font-black py-3 px-6 rounded-lg border border-slate-800 hover:border-orange-500 transition-all text-center uppercase tracking-widest text-[10px] cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <GithubIcon className="w-4 h-4 animate-bounce" />
+                          <span>Star {activeProject.title} on GitHub ↗</span>
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Star Confirmation Button */}
+                    <div className="border-t border-slate-900 pt-6 flex flex-col items-center">
+                      <button 
+                        onClick={() => {
+                          if (starCountdown > 0) return;
+                          setStarModalStage('kasam');
+                        }}
+                        disabled={starCountdown > 0}
+                        className={`w-full max-w-md py-3.5 px-6 rounded-lg font-black uppercase text-[12px] tracking-widest transition-all transform hover:scale-[1.02] text-center border cursor-pointer ${
+                          starCountdown === 0 
+                            ? 'bg-gradient-to-r from-orange-600 to-orange-900 text-white border-orange-500 hover:border-white shadow-[0_0_25px_rgba(249,115,22,0.5)] animate-pulse' 
+                            : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        {starCountdown > 0 
+                          ? `🔒 LOCKED (WAIT ${starCountdown}S TO CONFIRM STAR)...` 
+                          : `🌟 YES, I HAVE STARRED ${activeProject?.title.toUpperCase()}! 🌟`}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    {/* Left Column: Video */}
+                    <div className="w-full">
+                      <video 
+                        src="/service/kasam.mp4" 
+                        autoPlay 
+                        loop 
+                        playsInline 
+                        className="w-full rounded-xl border-2 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)] h-80 md:h-[390px] object-cover" 
+                      />
+                    </div>
+
+                    {/* Right Column: Oath details & swearing checkbox */}
+                    <div className="flex flex-col justify-between md:h-[390px] space-y-4">
+                      <div className="bg-[#020617] border border-orange-950/60 p-4 rounded-xl text-left font-mono shadow-inner">
+                        <p className="text-orange-400 font-black text-xs uppercase tracking-wide mb-1 flex items-center gap-2 animate-bounce">
+                          <span>✋</span> CITIZEN OATH OF CONSCIENCE:
+                        </p>
+                        <p className="text-gray-300 text-[11px] leading-relaxed uppercase">
+                          You swear on your mother's name that you actually starred <strong className="text-orange-400 font-bold">{activeProject?.title}</strong>. Lie and suffer immediate state administrative penalties.
+                        </p>
+                      </div>
+
+                      <label className="flex items-center gap-3 text-orange-400 font-black cursor-pointer bg-[#020617] border border-orange-900/60 p-4 rounded-xl hover:bg-orange-950/30 transition-all select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={hasSworn} 
+                          onChange={(e) => setHasSworn(e.target.checked)}
+                          className="w-5 h-5 accent-orange-500 cursor-pointer flex-shrink-0"
+                        />
+                        <span className="text-[11px] sm:text-[12px] uppercase tracking-wider leading-tight">
+                          ✋ I SWEAR ON MAA KASAM THAT I STARRED {activeProject?.title.toUpperCase()}!
+                          <span className="block mt-1 text-[10px] text-orange-500/70 font-mono tracking-widest">(Khao Maa Kasam)</span>
+                        </span>
+                      </label>
+
+                      {/* Final Oath Submit Button */}
+                      <button 
+                        onClick={() => {
+                          if (!hasSworn) return;
+                          setShowStarModal(false);
+                          handleOpenService(pendingService);
+                        }}
+                        disabled={!hasSworn}
+                        className={`w-full py-3.5 px-6 rounded-lg font-black uppercase text-[12px] tracking-widest transition-all transform hover:scale-[1.02] text-center border cursor-pointer ${
+                          hasSworn 
+                            ? 'bg-gradient-to-r from-orange-600 to-orange-900 text-white border-orange-500 hover:border-white shadow-[0_0_25px_rgba(249,115,22,0.5)] animate-pulse' 
+                            : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed opacity-50'
+                        }`}
+                      >
+                        🤝 Swear Oath & Proceed to Service
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
