@@ -66,7 +66,7 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-serif flex flex-col items-center">
       <header className="w-full bg-[#003366] text-white p-4 shadow-md border-b-4 border-orange-500">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-[#003366]">GOV</div>
             <div>
@@ -80,15 +80,27 @@ const Layout = () => {
         </div>
 
         {isInternalPage && (
-          <div className="max-w-4xl mx-auto mt-4 pt-4 border-t border-[#002244] flex gap-4">
+          <div className="max-w-7xl mx-auto mt-4 pt-4 border-t border-[#002244] flex gap-4">
             <Link 
               to="/dashboard" 
+              onClick={(e) => {
+                if (localStorage.getItem('stateMediaLock') === 'true') {
+                  e.preventDefault();
+                  alert("❌ ACCESS DENIED! You are currently under the 'Anti-Loitering & Forced Consuming Protocol'. You are prohibited from leaving this page until you have watched all 7 mandatory state news broadcasts for at least 10 seconds each.");
+                }
+              }}
               className={`px-4 py-2 font-bold rounded ${location.pathname === '/dashboard' ? 'bg-orange-500 text-white' : 'bg-[#002244] text-gray-300 hover:bg-[#001122]'}`}
             >
               National News
             </Link>
             <Link 
               to="/services" 
+              onClick={(e) => {
+                if (localStorage.getItem('stateMediaLock') === 'true') {
+                  e.preventDefault();
+                  alert("❌ ACCESS DENIED! You are currently under the 'Anti-Loitering & Forced Consuming Protocol'. You are prohibited from leaving this page until you have watched all 7 mandatory state news broadcasts for at least 10 seconds each.");
+                }
+              }}
               className={`px-4 py-2 font-bold rounded ${location.pathname === '/services' ? 'bg-orange-500 text-white' : 'bg-[#002244] text-gray-300 hover:bg-[#001122]'}`}
             >
               Govt Services
@@ -97,7 +109,7 @@ const Layout = () => {
         )}
       </header>
 
-      <main className="w-full max-w-4xl flex-grow p-6">
+      <main className="w-full max-w-7xl flex-grow p-6">
         <Outlet />
       </main>
 

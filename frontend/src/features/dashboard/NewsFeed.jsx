@@ -99,9 +99,23 @@ const NewsFeed = () => {
   const [activeVideo, setActiveVideo] = useState(null);
   const [hoveredVideoId, setHoveredVideoId] = useState(null);
   const [cancelStep, setCancelStep] = useState(0);
+  const [isLurking, setIsLurking] = useState(false);
+  const [typedOath, setTypedOath] = useState('');
+  const OATH_TEXT = "I pledge absolute loyalty to the State.";
+
+  // State Media Consuming lock features
+  const [watchedVideos, setWatchedVideos] = useState({});
+  const [forcedConsumption, setForcedConsumption] = useState(false);
+  const [activeVideoTimeLeft, setActiveVideoTimeLeft] = useState(10);
+  const [idleTimerCount, setIdleTimerCount] = useState(0);
+  const [showAnnoyingPopup, setShowAnnoyingPopup] = useState(false);
+  const [annoyingPopupCount, setAnnoyingPopupCount] = useState(0);
+  const [rickrollActive, setRickrollActive] = useState(false);
+  const [buttonEscapes, setButtonEscapes] = useState(0);
+  const [buttonPos, setButtonPos] = useState({ top: '60%', left: '50%' });
 
   useEffect(() => {
-    if (activeVideo) {
+    if (activeVideo || isLurking || showAnnoyingPopup || rickrollActive) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -109,15 +123,104 @@ const NewsFeed = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [activeVideo]);
+  }, [activeVideo, isLurking, showAnnoyingPopup, rickrollActive]);
+
+  // Initial loitering check: 10 seconds of passiveness
+  useEffect(() => {
+    if (activeVideo || isLurking || forcedConsumption || showAnnoyingPopup || rickrollActive || Object.keys(watchedVideos).length === NEWS_ITEMS.length) return;
+
+    const timer = setTimeout(() => {
+      setIsLurking(true);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [activeVideo, isLurking, forcedConsumption, showAnnoyingPopup, rickrollActive, watchedVideos]);
+
+  // 1-second interval manager
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (activeVideo) {
+        if (!watchedVideos[activeVideo.id]) {
+          setActiveVideoTimeLeft((prev) => {
+            if (prev <= 1) {
+              setWatchedVideos((w) => {
+                const next = { ...w, [activeVideo.id]: true };
+                if (Object.keys(next).length === NEWS_ITEMS.length) {
+                  localStorage.removeItem('stateMediaLock');
+                  setForcedConsumption(false);
+                  alert("🎉 CITIZEN STATUS RESTORED! You have successfully watched all mandatory broadcasts. The navigation lock is deactivated. Thank you for your compliance!");
+                }
+                return next;
+              });
+              return 0;
+            }
+            return prev - 1;
+          });
+        }
+        setIdleTimerCount(0);
+      } else {
+        if (!isLurking && !showAnnoyingPopup && !rickrollActive && Object.keys(watchedVideos).length < NEWS_ITEMS.length) {
+          setIdleTimerCount((prev) => prev + 1);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeVideo, watchedVideos, isLurking, showAnnoyingPopup, rickrollActive]);
+
+  // Handle idle timer limit triggers
+  useEffect(() => {
+    if (idleTimerCount >= 20) {
+      setIdleTimerCount(0);
+      setAnnoyingPopupCount((c) => {
+        const nextCount = c + 1;
+        if (nextCount >= 5) {
+          setRickrollActive(true);
+          setShowAnnoyingPopup(false);
+        } else {
+          setShowAnnoyingPopup(true);
+        }
+        return nextCount;
+      });
+    }
+  }, [idleTimerCount]);
 
   const handleOpenVideo = (item) => {
     setActiveVideo(item);
     setCancelStep(0);
+    setActiveVideoTimeLeft(watchedVideos[item.id] ? 0 : 10);
+    setIdleTimerCount(0);
+  };
+
+  const handleButtonHover = () => {
+    if (buttonEscapes < 10) {
+      const randomTop = Math.floor(Math.random() * 60) + 20; // 20% to 80%
+      const randomLeft = Math.floor(Math.random() * 60) + 20; // 20% to 80%
+      setButtonPos({ top: `${randomTop}%`, left: `${randomLeft}%` });
+      setButtonEscapes((prev) => prev + 1);
+    }
+  };
+
+  const handleExitRickroll = () => {
+    setRickrollActive(false);
+    setAnnoyingPopupCount(0);
+    setButtonEscapes(0);
+    setButtonPos({ top: '60%', left: '50%' });
+    setIdleTimerCount(0);
   };
 
   return (
     <div className="bg-white border border-gray-300 shadow-md h-full flex flex-col">
+      <style>{`
+        @keyframes gentle-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-gentle-float {
+          animation: gentle-float 4s ease-in-out infinite;
+        }
+      `}</style>
+      
       <div className="bg-[#003366] text-white p-3 border-b border-[#002244] flex justify-between items-center">
         <h3 className="font-bold uppercase tracking-wider text-sm flex items-center gap-2">
           📰 100% Verified Unbiased State Media
@@ -125,58 +228,93 @@ const NewsFeed = () => {
         <span className="text-xs bg-red-600 text-white px-2 py-1 rounded animate-pulse shadow-[0_0_10px_rgba(255,0,0,0.8)] border border-red-300">MANDATORY VIEWING</span>
       </div>
       
-      <div className="p-4 bg-gray-100 flex-grow">
-        <div className="flex flex-col gap-4">
+      <div className="p-4 bg-gray-100 flex-grow flex flex-col lg:flex-row gap-6 min-h-0">
+        {/* Left Column: News Items List */}
+        <div className="w-full lg:w-5/12 flex flex-col gap-4 overflow-y-auto custom-scrollbar-dark">
+          {/* Global Broadcast Instructions Banner */}
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-3.5 text-[#003366] text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-lg shadow-sm flex items-center gap-2 flex-shrink-0 animate-[pulse_3s_infinite] border border-amber-200">
+            <span>📡 Info: Hover card to preview live sound feed • Click to view full broadcast</span>
+          </div>
+
           {NEWS_ITEMS.map((item) => (
             <div 
               key={item.id} 
-              className="border-2 border-gray-300 bg-gray-50 rounded overflow-hidden hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:border-red-400 transition-all cursor-pointer flex flex-col relative min-h-[120px]"
+              className="group border-2 border-gray-300 bg-white rounded-lg overflow-hidden hover:border-[#003366] hover:shadow-md transition-all cursor-pointer flex flex-col relative min-h-[100px]"
               onClick={() => handleOpenVideo(item)}
               onMouseEnter={() => setHoveredVideoId(item.id)}
               onMouseLeave={() => setHoveredVideoId(null)}
             >
-              {hoveredVideoId === item.id && (
-                <div className="w-full h-60 sm:h-[450px] bg-gray-900 relative flex-shrink-0 flex items-center justify-center overflow-hidden border-b-4 border-red-500 animate-[pulse_0.5s_ease-in-out]">
-                  {!item.videoUrl.endsWith('.mp3') ? (
-                    <video 
-                      className="absolute inset-0 w-full h-full object-cover opacity-90"
-                      src={item.videoUrl}
-                      autoPlay
-                      loop
-                    />
+              <div className="p-5 flex-grow flex flex-col justify-center bg-white">
+                <h4 className="font-black text-[#003366] text-xl leading-tight mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span>{item.title}</span>
+                  {watchedVideos[item.id] ? (
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-1 rounded-full border border-emerald-300 flex items-center gap-1 shadow-sm flex-shrink-0 self-start sm:self-center">
+                      ✅ VIEW APPROVED
+                    </span>
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-900 border-2 border-dashed border-gray-600 m-2">
-                      <span className="text-red-500 font-black text-lg animate-bounce tracking-widest">🔊 AUDIO FEED ACTIVE</span>
-                      <audio src={item.videoUrl} autoPlay className="hidden" />
-                    </div>
+                    forcedConsumption && (
+                      <span className="bg-red-100 text-red-800 text-[10px] font-black px-2 py-1 rounded-full border border-red-300 flex items-center gap-1 shadow-sm flex-shrink-0 animate-pulse self-start sm:self-center animate-bounce">
+                        ⏳ MANDATORY WATCH
+                      </span>
+                    )
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-0 pointer-events-none"></div>
-                  <span className="absolute top-2 left-2 bg-red-700 text-white text-[10px] font-black px-2 py-0.5 rounded shadow z-10 border border-red-900 tracking-wider">
-                    {item.category}
-                  </span>
-                  <span className="absolute bottom-2 right-2 bg-black/90 text-xs text-red-500 font-bold px-3 py-1 rounded z-10 animate-pulse border border-red-900 shadow-[0_0_10px_rgba(255,0,0,0.8)] tracking-widest">
-                    🔴 LIVE
-                  </span>
-                </div>
-              )}
-              
-              <div className={`p-5 flex-grow flex flex-col justify-center transition-all ${hoveredVideoId === item.id ? 'bg-gradient-to-b from-red-50 to-white' : 'bg-gradient-to-b from-yellow-50 to-white'}`}>
-                <h4 className="font-black text-[#003366] text-xl leading-tight mb-2">
-                  {item.title}
                 </h4>
                 <p className="text-sm text-gray-800 leading-snug font-medium">
                   {item.description}
                 </p>
-                {hoveredVideoId !== item.id && (
-                  <div className="mt-3 text-[10px] text-red-600 font-bold uppercase flex items-center gap-1 opacity-60">
-                    <span>Hover to access mandatory media broadcast</span>
-                  </div>
-                )}
               </div>
             </div>
           ))}
         </div>
-      </div>      {/* Video Modal Overlay */}
+
+        {/* Right Column: Premium Live Standby Monitor (Wider & Floating) */}
+        <div className="w-full lg:w-7/12 flex flex-col flex-shrink-0 lg:sticky lg:top-4 h-[380px] lg:h-[540px] animate-gentle-float">
+          <div className="bg-[#020617] border-4 border-gray-900 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative">
+            <div className="bg-[#003366] text-white p-3 border-b-2 border-amber-500 font-black text-center text-xs uppercase tracking-widest flex-shrink-0">
+              🛰️ Live Preview Monitor
+            </div>
+            
+            {hoveredVideoId ? (() => {
+              const activeHoverItem = NEWS_ITEMS.find(n => n.id === hoveredVideoId);
+              if (!activeHoverItem) return null;
+              return (
+                <div className="flex-grow flex flex-col min-h-0 bg-black relative justify-center items-center">
+                  {!activeHoverItem.videoUrl.endsWith('.mp3') ? (
+                    <video 
+                      className="w-full h-full object-contain"
+                      src={activeVideo ? undefined : activeHoverItem.videoUrl}
+                      autoPlay
+                      playsInline
+                      loop
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 text-center">
+                      <span className="text-red-500 font-black text-lg animate-bounce tracking-widest mb-3">🔊 AUDIO FEED ACTIVE</span>
+                      <audio src={activeVideo ? undefined : activeHoverItem.videoUrl} autoPlay loop className="hidden" />
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3 bg-red-700 text-white text-[9px] font-black px-2 py-0.5 rounded shadow z-10 border border-red-900 tracking-wider uppercase">
+                    {activeHoverItem.category}
+                  </div>
+                  <span className="absolute bottom-3 right-3 bg-black/85 text-[10px] text-red-500 font-black px-2.5 py-1 rounded z-10 animate-pulse border border-red-900 tracking-widest">
+                    🔴 LIVE FEED
+                  </span>
+                </div>
+              );
+            })() : (
+              <div className="flex-grow flex flex-col justify-center items-center p-6 text-center bg-gradient-to-br from-[#0c1020] to-[#030712] text-gray-500 font-mono text-xs select-none">
+                <span className="text-4xl mb-4 animate-pulse">📡</span>
+                <p className="text-amber-500 font-black uppercase tracking-wider mb-2">Monitor Standby</p>
+                <p className="max-w-xs leading-relaxed opacity-60">
+                  Hover your cursor over any official news broadcast card on the left to stream the real-time live preview feed.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Video Modal Overlay */}
       {activeVideo && (
         <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
           <div className="w-full max-w-4xl max-h-[95vh] bg-gradient-to-br from-[#0c1020] to-[#030712] border-4 border-[#1e293b] rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative flex flex-col">
@@ -186,7 +324,7 @@ const NewsFeed = () => {
             </div>
  
             {cancelStep === 0 ? (
-              <div className="flex-grow flex flex-col min-h-0 overflow-y-auto bg-[#020617]">
+              <div className="flex-grow flex flex-col min-h-0 overflow-y-auto bg-[#020617] custom-scrollbar-dark">
                 <div className={`relative flex-shrink-0 flex items-center justify-center min-h-[320px] max-h-[55vh] bg-black ${activeVideo.videoUrl.endsWith('.mp3') ? 'py-10 bg-gradient-to-br from-gray-900 to-black' : ''}`}>
                   {activeVideo.videoUrl.endsWith('.mp3') ? (
                     <audio 
@@ -206,22 +344,31 @@ const NewsFeed = () => {
                 </div>
                 
                 <div className="bg-gradient-to-b from-[#0f172a] to-[#020617] p-6 border-t-2 border-red-900/60 text-center flex flex-col items-center flex-shrink-0 w-full">
-                  <p className="text-red-500 text-xs sm:text-sm italic font-extrabold mb-4 animate-pulse uppercase tracking-widest">
-                    {activeVideo.warningText}
-                  </p>
-                  <button 
-                    onClick={() => setCancelStep(1)}
-                    className="w-full max-w-md bg-gradient-to-r from-[#dc2626] to-[#b91c1c] hover:from-[#ef4444] hover:to-[#dc2626] text-white font-black py-3.5 px-8 rounded-lg shadow-[0_0_25px_rgba(220,38,38,0.5)] border-2 border-red-500 hover:border-white transition-all transform hover:scale-105 uppercase tracking-widest text-xs sm:text-sm animate-[pulse_2.5s_infinite]"
-                  >
-                    TERMINATE BROADCAST
-                  </button>
+                  {forcedConsumption && activeVideoTimeLeft > 0 ? (
+                    <div className="w-full max-w-md bg-[#030712] border-2 border-amber-500 rounded-lg p-4 text-amber-400 text-xs sm:text-sm font-black uppercase tracking-widest animate-pulse flex flex-col items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                      <span>⏳ MANDATORY ACTIVE BROADCAST VIEWING</span>
+                      <span className="text-2xl font-mono tracking-widest">{activeVideoTimeLeft}s remaining</span>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-red-500 text-xs sm:text-sm italic font-extrabold mb-4 animate-pulse uppercase tracking-widest">
+                        {activeVideo.warningText}
+                      </p>
+                      <button 
+                        onClick={() => setCancelStep(1)}
+                        className="w-full max-w-md bg-gradient-to-r from-[#dc2626] to-[#b91c1c] hover:from-[#ef4444] hover:to-[#dc2626] text-white font-black py-3.5 px-8 rounded-lg shadow-[0_0_25px_rgba(220,38,38,0.5)] border-2 border-red-500 hover:border-white transition-all transform hover:scale-105 uppercase tracking-widest text-xs sm:text-sm animate-[pulse_2.5s_infinite]"
+                      >
+                        Cancel Video
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
-              <div className="bg-gradient-to-b from-[#0b0f19] to-[#02050f] p-6 sm:p-8 text-center border-t-4 border-red-700 flex-grow flex flex-col justify-center min-h-0 overflow-y-auto">
+              <div className="bg-gradient-to-b from-[#0b0f19] to-[#02050f] p-6 sm:p-8 text-center border-t-4 border-red-700 flex-grow flex flex-col justify-center min-h-0 overflow-y-auto custom-scrollbar-dark">
                 <h3 className="text-red-500 font-black text-xl sm:text-3xl mb-4 animate-bounce flex-shrink-0 tracking-wider">⚠️ WAIT! MANDATORY DETAILED NEWS ⚠️</h3>
                 
-                <div className="text-left bg-[#030712] border-2 border-red-950 shadow-[inset_0_0_30px_rgba(220,38,38,0.15)] rounded-lg p-5 sm:p-6 text-[#f8fafc] space-y-4 mb-6 overflow-y-auto font-mono text-sm sm:text-base flex-grow min-h-[180px]">
+                <div className="text-left bg-[#030712] border-2 border-red-950 shadow-[inset_0_0_30px_rgba(220,38,38,0.15)] rounded-lg p-5 sm:p-6 text-[#f8fafc] space-y-4 mb-6 overflow-y-auto font-mono text-sm sm:text-base flex-grow min-h-[180px] custom-scrollbar-dark">
                   <p className="text-red-400 font-black border-b border-red-950/60 pb-3 uppercase tracking-wider flex items-center gap-2">
                     <span>🛑</span> Acknowledge the following State directives:
                   </p>
@@ -246,7 +393,14 @@ const NewsFeed = () => {
                     GO BACK TO VIDEO
                   </button>
                   <button 
-                    onClick={() => setActiveVideo(null)}
+                    onClick={() => {
+                      if (forcedConsumption && !watchedVideos[activeVideo.id]) {
+                        alert(`❌ SHUTDOWN VIOLATION! You have not completed the mandatory 10-second viewing phase for this broadcast. Close sequence aborted.`);
+                        setCancelStep(0);
+                      } else {
+                        setActiveVideo(null);
+                      }
+                    }}
                     className="bg-gradient-to-r from-[#1e1b4b] to-[#312e81] hover:from-[#312e81] hover:to-[#4338ca] text-red-500 hover:text-red-300 font-black py-3.5 px-6 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.1)] border-2 border-red-950 hover:border-red-500 transition-all transform hover:scale-105 uppercase tracking-widest flex-1"
                   >
                     I ACCEPT. CANCEL.
@@ -254,6 +408,162 @@ const NewsFeed = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Anti-Loitering Protocol Overlay */}
+      {isLurking && (
+        <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[95vh] bg-gradient-to-br from-[#1e1b4b] to-[#030712] border-4 border-red-600 rounded-xl p-6 sm:p-8 text-center shadow-[0_0_50px_rgba(220,38,38,0.4)] animate-[pulse_3s_infinite] flex flex-col min-h-0 overflow-y-auto custom-scrollbar-dark">
+            <h2 className="text-red-500 font-black text-xl sm:text-2xl mb-4 tracking-widest animate-bounce flex-shrink-0 flex items-center justify-center gap-3">
+              <span>🚨</span> ANTI-LOITERING PROTOCOL ACTIVATED <span>🚨</span>
+            </h2>
+            
+            <div className="text-left bg-black/70 border border-red-950 p-5 rounded-lg text-gray-300 space-y-4 mb-6 font-mono text-sm leading-relaxed flex-grow overflow-y-auto min-h-[150px] custom-scrollbar-dark">
+              <p className="text-red-400 font-bold uppercase tracking-wider border-b border-red-950/60 pb-2 flex items-center gap-2">
+                <span>⚠️</span> Citizen Offense: Passive Loitering
+              </p>
+              <p>
+                Our algorithms have determined that you have spent more than 10 seconds idling on this portal without fulfilling your civic duty of clicking and consuming verified state media.
+              </p>
+              <p className="text-yellow-500 font-semibold animate-pulse">
+                PENALTY: Your browser session is now throttled and locked.
+              </p>
+              <p className="text-white border-t border-red-950/60 pt-4">
+                To lift this sanction, you must type the official Pledge of Loyalty exactly as shown below (Copy-Paste is blocked for your protection):
+              </p>
+              <div className="bg-[#020617] p-4 rounded border border-red-950/60 text-[#f8fafc] font-black italic text-center select-none text-xs sm:text-sm">
+                "{OATH_TEXT}"
+              </div>
+            </div>
+
+            <textarea
+              className="w-full bg-[#020617] border-2 border-red-950 rounded-lg p-3 text-white font-mono text-sm focus:outline-none focus:border-red-600 transition-colors mb-6 resize-none h-20 flex-shrink-0"
+              placeholder="Type the loyalty pledge here..."
+              value={typedOath}
+              onChange={(e) => setTypedOath(e.target.value)}
+              onPaste={(e) => {
+                e.preventDefault();
+                alert("Nice try, Citizen! The Ministry has recorded this attempt at bypass. Typing manually is mandatory.");
+              }}
+            />
+
+            <div className="flex flex-col gap-3 flex-shrink-0">
+              <button
+                disabled={typedOath.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") !== OATH_TEXT.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")}
+                onClick={() => {
+                  setIsLurking(false);
+                  setTypedOath('');
+                  setForcedConsumption(true);
+                  localStorage.setItem('stateMediaLock', 'true');
+                  alert("🚨 LOCKOUT STATUS ACTIVE! Pledge recorded. Your browser has been entered into 'Forced State Media Consumption Mode'. You are barred from leaving this page or clicking services until you have fully consumed all 7 verified news broadcasts for at least 10 seconds each. Go!");
+                }}
+                className={`w-full py-4 rounded-lg font-black uppercase tracking-widest text-xs sm:text-sm transition-all transform border-2 ${
+                  typedOath.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") === OATH_TEXT.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+                    ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white border-emerald-500 hover:border-white shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-102 cursor-pointer'
+                    : 'bg-gray-800 text-gray-500 border-gray-900 cursor-not-allowed'
+                }`}
+              >
+                SUBMIT LOYALTY PLEDGE
+              </button>
+              
+              <button
+                onClick={() => {
+                  alert("💸 Fine of ₹2,500 has been successfully auto-debited from your linked Aadhar bank account. However, paying the fine does NOT excuse you from active patriotism! You MUST still manually type the Loyalty Pledge to unlock your session.");
+                }}
+                className="text-xs text-red-500 hover:text-red-400 font-black uppercase tracking-wider underline transition-all hover:scale-105 cursor-pointer shadow-red-500/20 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-pulse"
+              >
+                Or pay ₹2,500 Digital Loitering Fine immediately (Does Not Bypass Lock)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Annoying Idle Reminder Popup */}
+      {showAnnoyingPopup && (
+        <div className="fixed inset-0 z-[9998] bg-black/85 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-b from-red-950 to-black border-4 border-yellow-500 rounded-xl p-6 max-w-md w-full text-center shadow-[0_0_50px_rgba(234,179,8,0.3)] animate-[bounce_1s_infinite]">
+            <span className="text-3xl mb-4 block animate-bounce">📢 WARNING #{annoyingPopupCount} 📢</span>
+            <h3 className="text-yellow-500 font-black text-lg mb-4 uppercase tracking-widest">Passive Idling Detected</h3>
+            <p className="text-gray-300 font-mono text-xs sm:text-sm mb-6 leading-relaxed">
+              You have been idling on the dashboard for 20 seconds without consuming news. Under sub-section 4B of the Digital Media Act, active viewing is highly encouraged. Consuming state media is not optional!
+            </p>
+            <button
+              onClick={() => {
+                setShowAnnoyingPopup(false);
+                setIdleTimerCount(0);
+              }}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-black py-3 px-6 rounded border-2 border-yellow-300 hover:border-white transition-all transform hover:scale-102 uppercase tracking-widest text-sm"
+            >
+              OK, I WILL BE GOOD & WATCH NOW
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Super unhinged Rickroll Runaway Button Punishment */}
+      {rickrollActive && (
+        <div className="fixed inset-0 z-[99999] bg-[#020617] flex flex-col justify-center items-center p-6 text-white text-center select-none overflow-hidden">
+          <audio src="/audio/Never gonna give you up.mp3" autoPlay loop />
+          
+          <div className="max-w-2xl w-full flex flex-col items-center gap-6 z-10">
+            {/* Flashing lights and spinning alert symbols */}
+            <div className="relative w-24 h-24 flex items-center justify-center mb-2">
+              <span className="text-6xl animate-ping absolute">🚨</span>
+              <span className="text-6xl relative z-10 animate-pulse">🚨</span>
+            </div>
+            
+            <h1 className="text-red-500 font-black text-3xl sm:text-5xl tracking-widest uppercase animate-pulse leading-none">
+              TREASON LEVEL 5 DETECTED
+            </h1>
+            <h2 className="text-yellow-500 font-bold text-lg sm:text-xl font-mono uppercase tracking-wider">
+              System Seized for Patriotism Calibration
+            </h2>
+            
+            <div className="bg-slate-900/80 border-2 border-red-500/50 p-6 sm:p-8 rounded-xl max-w-xl shadow-[0_0_50px_rgba(239,68,68,0.15)] backdrop-blur-sm relative">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.1)_0%,transparent_100%)]"></div>
+              <p className="text-xs sm:text-sm text-gray-300 font-mono leading-relaxed mb-6 relative z-10">
+                "Dear citizen, you have actively ignored five consecutive verified news media consumption directives. Under digital safety sub-section 99-Z, your session has been temporarily hijacked. Rick Astley has been assigned as your compliance officer. You must click the escape button below to surrender your insubordination."
+              </p>
+              
+              <div className="text-[10px] sm:text-xs text-yellow-500 font-mono tracking-widest uppercase animate-pulse mb-2 relative z-10">
+                🔒 Lock Protocol Active • Audio Override Engaged
+              </div>
+              <div className="text-[10px] sm:text-xs text-red-400 font-mono font-bold uppercase relative z-10">
+                {buttonEscapes < 10 ? (
+                  <span className="animate-pulse">⚠️ BUTTON IS TRYING TO RUN AWAY! CHASE IT! ESCAPES REMAINING: {10 - buttonEscapes}</span>
+                ) : (
+                  <span className="text-emerald-400 font-black animate-bounce">✅ COMPLIANCE ACHIEVED. THE BUTTON HAS SURRENDERED. CLICK IT TO EXIT!</span>
+                )}
+              </div>
+            </div>
+
+            {/* Runaway escape button */}
+            <button
+              onMouseEnter={handleButtonHover}
+              onClick={buttonEscapes >= 10 ? handleExitRickroll : undefined}
+              className={`px-8 py-4 font-black rounded-xl shadow-2xl transition-all uppercase tracking-widest text-xs sm:text-sm cursor-pointer whitespace-nowrap ${
+                buttonEscapes < 10 
+                  ? 'bg-gradient-to-r from-red-600 to-red-800 text-white border-2 border-red-400' 
+                  : 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white border-2 border-emerald-400 scale-110 animate-bounce'
+              }`}
+              style={{
+                position: 'fixed',
+                top: buttonPos.top,
+                left: buttonPos.left,
+                transform: 'translate(-50%, -50%)',
+                zIndex: 999999,
+                transition: buttonEscapes < 10 ? 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none'
+              }}
+            >
+              {buttonEscapes < 10 ? (
+                `🏃 Click to Surrender (${buttonEscapes}/10)`
+              ) : (
+                '🤝 SIGN COMPLIANCE AGREEMENT & EXIT RICKROLL'
+              )}
+            </button>
           </div>
         </div>
       )}
