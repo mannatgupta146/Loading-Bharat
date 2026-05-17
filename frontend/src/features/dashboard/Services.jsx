@@ -3,8 +3,10 @@ import { X, ShieldAlert, Plane, Car, FileText, Landmark, RefreshCw, AlertCircle,
 
 const Services = () => {
   const [selectedService, setSelectedService] = useState(null); // 'driving' | 'flight' | 'grievance' | 'factcheck' | 'bypass'
-  const [flightSubState, setFlightSubState] = useState('warning'); // 'warning' | 'crying'
-  const [drivingSubState, setDrivingSubState] = useState('warning'); // 'warning' | 'crying'
+  const [flightSubState, setFlightSubState] = useState('warning'); // 'warning' | 'loading' | 'crying'
+  const [flightStep, setFlightStep] = useState(0);
+  const [drivingSubState, setDrivingSubState] = useState('warning'); // 'warning' | 'loading' | 'crying'
+  const [drivingStep, setDrivingStep] = useState(0);
 
   // Grievance filing states
   const [grievanceText, setGrievanceText] = useState('');
@@ -22,10 +24,17 @@ const Services = () => {
   const [bypassState, setBypassState] = useState('form'); // 'form' | 'loading' | 'assigned'
   const [bypassStep, setBypassStep] = useState(0);
 
+  // Gold Investment states
+  const [goldState, setGoldState] = useState('form'); // 'form' | 'loading' | 'assigned'
+  const [goldStep, setGoldStep] = useState(0);
+  const [potatoCount, setPotatoCount] = useState(0);
+
   const handleOpenService = (service) => {
     setSelectedService(service);
     setFlightSubState('warning');
+    setFlightStep(0);
     setDrivingSubState('warning');
+    setDrivingStep(0);
     setGrievanceState('form');
     setGrievanceText('');
     setLoadingStep(0);
@@ -36,12 +45,17 @@ const Services = () => {
     setBypassState('form');
     setBypassGift(1);
     setBypassStep(0);
+    setGoldState('form');
+    setGoldStep(0);
+    setPotatoCount(0);
   };
 
   const handleCloseService = () => {
     setSelectedService(null);
     setFlightSubState('warning');
+    setFlightStep(0);
     setDrivingSubState('warning');
+    setDrivingStep(0);
     setGrievanceState('form');
     setGrievanceText('');
     setLoadingStep(0);
@@ -52,6 +66,61 @@ const Services = () => {
     setBypassState('form');
     setBypassGift(1);
     setBypassStep(0);
+    setGoldState('form');
+    setGoldStep(0);
+    setPotatoCount(0);
+  };
+
+  const handleDrivingSubmit = () => {
+    setDrivingSubState('loading');
+    setDrivingStep(0);
+    
+    setTimeout(() => {
+      setDrivingStep(1);
+    }, 1500);
+    
+    setTimeout(() => {
+      setDrivingStep(2);
+    }, 3000);
+    
+    setTimeout(() => {
+      setDrivingSubState('crying');
+    }, 4500);
+  };
+
+  const handleFlightSubmit = () => {
+    setFlightSubState('loading');
+    setFlightStep(0);
+    
+    setTimeout(() => {
+      setFlightStep(1);
+    }, 1500);
+    
+    setTimeout(() => {
+      setFlightStep(2);
+    }, 3000);
+    
+    setTimeout(() => {
+      setFlightSubState('crying');
+    }, 4500);
+  };
+
+  const handleGoldSubmit = (e) => {
+    e.preventDefault();
+    setGoldState('loading');
+    setGoldStep(0);
+    
+    setTimeout(() => {
+      setGoldStep(1);
+    }, 1500);
+    
+    setTimeout(() => {
+      setGoldStep(2);
+    }, 3000);
+    
+    setTimeout(() => {
+      setGoldState('assigned');
+    }, 4500);
   };
 
   const handleGrievanceSubmit = (e) => {
@@ -204,20 +273,27 @@ const Services = () => {
               </div>
             </button>
 
-            {/* Aadhaar Re-Linking */}
+            {/* Gold Investment */}
             <button 
-              onClick={() => alert("🚨 SYSTEM BLOCKED!\n\nYour regional server is currently enjoying a mandatory 4-hour tea break. Please submit Annexure-7 in duplicate at your nearest offline post office. Estimated wait time: 42 years.")}
-              className="bg-[#0b0f19]/60 p-6 border-2 border-dashed border-slate-800 hover:border-red-950 hover:bg-red-950/10 rounded-xl text-left shadow-lg transition-all duration-300 flex flex-col justify-between h-56 opacity-70 group"
+              onClick={() => handleOpenService('gold')}
+              className="bg-[#0b0f19] p-6 border-2 border-slate-800 hover:border-amber-500 rounded-xl text-left shadow-lg transition-all duration-300 transform hover:scale-[1.02] flex flex-col justify-between group h-64 relative overflow-hidden"
             >
-              <div className="flex justify-between items-start mb-2">
-                <RefreshCw className="text-gray-500 w-6 h-6 group-hover:rotate-180 transition-transform duration-700" />
-                <span className="text-[9px] font-mono text-gray-500 border border-slate-900 bg-slate-900 px-2 py-0.5 rounded uppercase font-black">
-                  ⏳ 42-Year Delay
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-amber-950/40 rounded-lg border border-amber-900/60 group-hover:bg-amber-950 transition-colors">
+                  <Landmark className="text-amber-500 w-6 h-6 group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-[9px] font-mono text-amber-500 border border-amber-950 bg-amber-950/20 px-2 py-0.5 rounded font-black uppercase tracking-wider animate-pulse">
+                  ✨ ALCHEMICAL WEALTH
                 </span>
               </div>
               <div>
-                <div className="font-black text-gray-400 text-sm mb-1 group-hover:text-red-400 transition-colors">Aadhaar Re-Linking Form</div>
-                <div className="text-[10px] text-gray-600 font-mono uppercase">Status: Officer is on leave</div>
+                <div className="font-black text-white text-base sm:text-lg group-hover:text-amber-400 transition-colors mb-1">
+                  Gold Investment Portal
+                </div>
+                <div className="text-[11px] text-gray-500 font-mono uppercase tracking-wider">
+                  Alchemical rate: 100% potato conversion guaranteed
+                </div>
               </div>
             </button>
 
@@ -276,8 +352,7 @@ const Services = () => {
       {selectedService === 'driving' && (
         <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="w-full max-w-5xl bg-gradient-to-b from-[#1e1b4b] to-[#030712] border-4 border-red-600 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.3)] my-8">
-            
-            {drivingSubState === 'warning' ? (
+            {drivingSubState === 'warning' && (
               <>
                 <div className="bg-red-700 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-red-900 shadow-md">
                   <ShieldAlert className="animate-bounce" /> 🏛️ MINISTRY OF SURFACE TRANSPORT
@@ -309,7 +384,7 @@ const Services = () => {
                           DO YOU STILL INSIST ON DRIVING AND IGNORING GOVERNMENT SAFETY DECREES?
                         </p>
                       </div>
-
+ 
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button 
                           onClick={handleCloseService}
@@ -318,7 +393,7 @@ const Services = () => {
                           ❌ No, I Don't Want to Die!
                         </button>
                         <button 
-                          onClick={() => setDrivingSubState('crying')}
+                          onClick={handleDrivingSubmit}
                           className="w-full sm:w-48 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-black py-2.5 px-4 rounded-lg border border-red-500 hover:border-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-wider text-xs cursor-pointer text-center"
                         >
                           🤝 Yes, I Insist on Driving
@@ -328,7 +403,56 @@ const Services = () => {
                   </div>
                 </div>
               </>
-            ) : (
+            )}
+
+            {drivingSubState === 'loading' && (
+              <>
+                <div className="bg-red-800 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-red-950 shadow-md">
+                  ✨ PROCESSING ROAD SUITABILITY PERMISSION REQUEST
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-[#020617] border border-red-950 p-8 rounded-lg text-center font-mono md:h-[420px] flex flex-col justify-center items-center shadow-inner space-y-6">
+                    <div className="relative w-24 h-24 flex items-center justify-center bg-red-950/40 rounded-full border border-red-500/60 shadow-[0_0_30px_rgba(239,68,68,0.2)] animate-pulse">
+                      <Car className="text-red-500 w-12 h-12 animate-bounce" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-red-500 font-black text-sm uppercase tracking-widest">
+                        LICENSE APPLICATION IN PROGRESS:
+                      </h4>
+                      
+                      <div className="h-6 flex items-center justify-center">
+                        {drivingStep === 0 && (
+                          <p className="text-gray-300 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            🚗 Initiating surface safety verification checks...
+                          </p>
+                        )}
+                        {drivingStep === 1 && (
+                          <p className="text-orange-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            ⚠️ Scanning national potholes & bridge integrity database...
+                          </p>
+                        )}
+                        {drivingStep === 2 && (
+                          <p className="text-red-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            🚨 Formulating standard government rejection response...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="w-full max-w-md bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-red-600 to-amber-500 h-full transition-all duration-[1.5s]"
+                        style={{ width: `${(drivingStep + 1) * 33.3}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {drivingSubState === 'crying' && (
               <>
                 <div className="bg-red-800 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-red-950 shadow-md">
                   😭 DEPT OF TRANSPORT SILENCE
@@ -351,19 +475,19 @@ const Services = () => {
                     <div className="flex flex-col justify-between md:h-[420px] space-y-6">
                       <div className="bg-[#020617] border border-red-950 p-5 rounded-lg text-left font-mono shadow-inner flex-grow flex flex-col justify-center">
                         <h4 className="text-red-500 font-black text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
-                          <span>😭</span> DRIVING PETITION TOTALLY DISREGARDED:
+                          <span>😭</span> WE DON'T WANT YOU TO DIE!
                         </h4>
                         <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                          We absolutely told you so! Your digital tears and offline complaints have been successfully uploaded directly to our circular shredding bin. You are still <strong className="text-red-400 font-black">NOT</strong> permitted to drive. Enjoy walking!
+                          We don't want you to die like this, so we didn't issue your driving license. Here is our grief, and enjoy living! (Please enjoy the premium safety of walking instead)
                         </p>
                         <p className="text-emerald-400 text-xs font-bold mt-4 animate-bounce uppercase">
-                          Walking decree established. Have a safe and happy non-journey!
+                          Walking decree established. Enjoy the pure safety of being alive!
                         </p>
                       </div>
-
+ 
                       <button 
                         onClick={handleCloseService}
-                        className="w-64 mx-auto md:mx-0 bg-gradient-to-r from-red-700 to-red-950 hover:from-red-600 hover:to-red-850 text-white font-black py-2.5 px-6 rounded-lg border border-red-600 hover:border-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all transform hover:scale-103 uppercase tracking-widest text-xs cursor-pointer text-center"
+                        className="w-full bg-gradient-to-r from-red-700 to-red-950 hover:from-red-600 hover:to-red-850 text-white font-black py-3 px-6 rounded-lg border border-red-600 hover:border-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-widest text-[10px] cursor-pointer text-center animate-pulse"
                       >
                         🤝 Accept Walking Decree & Exit
                       </button>
@@ -380,8 +504,7 @@ const Services = () => {
       {selectedService === 'flight' && (
         <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="w-full max-w-5xl bg-gradient-to-b from-[#1e293b] to-[#030712] border-4 border-amber-600 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.3)] my-8">
-            
-            {flightSubState === 'warning' ? (
+            {flightSubState === 'warning' && (
               <>
                 <div className="bg-amber-600 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-amber-800 shadow-md">
                   <Plane className="animate-spin duration-[10s]" /> ✈️ DEPARTMENT OF AVIATION SURRENDER
@@ -413,7 +536,7 @@ const Services = () => {
                           DO YOU STILL WISH TO PROCEED AND TAKE 100% PERSONAL LIFE RESPONSIBILITY?
                         </p>
                       </div>
-
+ 
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button 
                           onClick={handleCloseService}
@@ -422,7 +545,7 @@ const Services = () => {
                           ❌ No, I Don't Want to Die!
                         </button>
                         <button 
-                          onClick={() => setFlightSubState('crying')}
+                          onClick={handleFlightSubmit}
                           className="w-full sm:w-48 bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black py-2.5 px-4 rounded-lg border border-amber-500 hover:border-white shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-wider text-xs cursor-pointer text-center"
                         >
                           🤝 Yes, I Accept All Risks
@@ -432,7 +555,56 @@ const Services = () => {
                   </div>
                 </div>
               </>
-            ) : (
+            )}
+
+            {flightSubState === 'loading' && (
+              <>
+                <div className="bg-amber-700 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-amber-950 shadow-md">
+                  ✨ PROCESSING AVIATION RISK INDEMNITY CONFIRMATION
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-[#020617] border border-amber-950 p-8 rounded-lg text-center font-mono md:h-[420px] flex flex-col justify-center items-center shadow-inner space-y-6">
+                    <div className="relative w-24 h-24 flex items-center justify-center bg-amber-950/40 rounded-full border border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.2)] animate-pulse">
+                      <Plane className="text-amber-500 w-12 h-12 animate-spin duration-[5000ms]" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-amber-500 font-black text-sm uppercase tracking-widest">
+                        TICKET BOOKING IN PROGRESS:
+                      </h4>
+                      
+                      <div className="h-6 flex items-center justify-center">
+                        {flightStep === 0 && (
+                          <p className="text-gray-300 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            ✈️ Connecting to government imaginary seating mainframe...
+                          </p>
+                        )}
+                        {flightStep === 1 && (
+                          <p className="text-orange-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            ⚠️ Securing 100% citizen liability waiver agreement...
+                          </p>
+                        )}
+                        {flightStep === 2 && (
+                          <p className="text-amber-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            🚨 Preparing official aviation grievance ticket response...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="w-full max-w-md bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-amber-600 to-yellow-400 h-full transition-all duration-[1.5s]"
+                        style={{ width: `${(flightStep + 1) * 33.3}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {flightSubState === 'crying' && (
               <>
                 <div className="bg-red-800 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-red-950 shadow-md">
                   😭 DEPT OF AVIATION GRIEF MANAGEMENT
@@ -455,19 +627,19 @@ const Services = () => {
                     <div className="flex flex-col justify-between md:h-[420px] space-y-6">
                       <div className="bg-[#020617] border border-red-950 p-5 rounded-lg text-left font-mono shadow-inner flex-grow flex flex-col justify-center">
                         <h4 className="text-red-500 font-black text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
-                          <span>😭</span> WE ABSOLUTELY TOLD YOU SO:
+                          <span>😭</span> WE DON'T WANT YOU TO DIE!
                         </h4>
                         <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                          Your digital tears and final complaints have been successfully uploaded to our database of unread claims. Your ticket is still <strong className="text-red-400 font-black">NOT</strong> booked, and your seat on this journey remains highly imaginary.
+                          We don't want you to die like this, so we didn't book your ticket. Here is our grief, and enjoy living! (Please enjoy the ground-level safety of staying alive on Earth)
                         </p>
                         <p className="text-emerald-400 text-xs font-bold mt-4 animate-bounce uppercase">
-                          Have a safe and happy non-journey! Compliance achieved.
+                          Imaginary ticket catalogued. Enjoy the pure safety of being alive!
                         </p>
                       </div>
-
+ 
                       <button 
                         onClick={handleCloseService}
-                        className="w-64 mx-auto md:mx-0 bg-gradient-to-r from-red-700 to-red-950 hover:from-red-600 hover:to-red-800 text-white font-black py-2.5 px-6 rounded-lg border border-red-600 hover:border-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all transform hover:scale-103 uppercase tracking-widest text-xs cursor-pointer text-center"
+                        className="w-full bg-gradient-to-r from-red-700 to-red-950 hover:from-red-600 hover:to-red-800 text-white font-black py-3 px-6 rounded-lg border border-red-600 hover:border-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-widest text-[10px] cursor-pointer text-center animate-pulse"
                       >
                         🤝 Accept Imaginary Flight Status & Exit
                       </button>
@@ -1043,6 +1215,207 @@ const Services = () => {
                         className="w-full bg-gradient-to-r from-orange-700 to-orange-950 hover:from-orange-600 hover:to-orange-850 text-white font-black py-3 px-6 rounded-lg border border-orange-600 hover:border-white shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-widest text-[10px] cursor-pointer text-center animate-pulse"
                       >
                         🤝 I Promise to Study Sincerely & Be a Good Citizen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 🥔 Gold Investment / Potato Alchemy Modal */}
+      {selectedService === 'gold' && (
+        <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-5xl bg-gradient-to-b from-[#2e2605] to-[#030712] border-4 border-amber-500 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.3)] my-8">
+            
+            {goldState === 'form' && (
+              <>
+                <div className="bg-amber-600 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-amber-800 shadow-md">
+                  <Landmark className="animate-bounce" /> 🏛️ NATIONAL ALCHEMY & POTATO RESERVE TERMINAL
+                </div>
+                
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    {/* Left Column: Decrees & Info */}
+                    <div className="bg-[#020617] border border-amber-950 p-6 rounded-lg text-left font-mono md:h-[420px] flex flex-col justify-center shadow-inner">
+                      <h4 className="text-amber-500 font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span>🥔</span> ALCHEMICAL POTATO STANDARD DECREE:
+                      </h4>
+                      <p className="text-gray-300 text-xs sm:text-sm leading-relaxed mb-4">
+                        Attention Investor: Due to unprecedented monetary alchemical updates, traditional physical gold standards are suspended. 
+                      </p>
+                      <p className="text-amber-400 text-xs leading-relaxed border-l-2 border-amber-700 pl-3">
+                        Traditional wealth storage is deprecated. Please input the total count of physical potatoes you wish to deposit into our state alchemical machines.
+                      </p>
+                    </div>
+                    
+                    {/* Right Column: Form */}
+                    <form onSubmit={handleGoldSubmit} className="flex flex-col justify-between md:h-[420px] space-y-6">
+                      <div className="bg-[#020617] border border-amber-950 p-5 rounded-lg text-left font-mono shadow-inner flex-grow flex flex-col justify-center space-y-4">
+                        <label className="text-amber-400 text-xs font-bold uppercase tracking-wider block">
+                          Enter quantity of potatoes (Aalu) to deposit:
+                        </label>
+                        
+                        <div className="bg-[#070b15] border border-slate-800 p-4 rounded-lg space-y-4">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setPotatoCount(prev => Math.max(0, prev - 1))}
+                              className="w-12 h-12 flex items-center justify-center rounded-lg bg-slate-900 border border-slate-800 text-amber-500 hover:bg-slate-800 hover:text-white font-black text-xl select-none cursor-pointer transition-all active:scale-95"
+                            >
+                              -
+                            </button>
+                            
+                            <input 
+                              type="text"
+                              value={potatoCount}
+                              readOnly
+                              className="flex-grow bg-slate-950 border border-slate-800 text-white rounded-lg h-12 text-center font-black font-mono text-lg focus:outline-none select-none"
+                            />
+                            
+                            <button
+                              type="button"
+                              onClick={() => setPotatoCount(prev => prev + 1)}
+                              className="w-12 h-12 flex items-center justify-center rounded-lg bg-slate-900 border border-slate-800 text-amber-500 hover:bg-slate-800 hover:text-white font-black text-xl select-none cursor-pointer transition-all active:scale-95"
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          <div className="text-center">
+                            {potatoCount < 7 ? (
+                              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider animate-pulse">
+                                ⚠️ Minimum 7 Aalu required for alchemical reaction! (Current: {potatoCount})
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">
+                                ✅ Alchemical reactor activated! Ready to transmute.
+                              </p>
+                            )}
+                            <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-wider">
+                              Estimated Alchemy Gold Output: {(potatoCount * 0.12).toFixed(2)} Grams
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button 
+                          type="button"
+                          onClick={handleCloseService}
+                          className="flex-1 bg-slate-900 hover:bg-slate-800 text-gray-400 hover:text-white font-bold py-3 rounded-lg border border-slate-800 transition-colors uppercase tracking-widest text-[10px] cursor-pointer text-center"
+                        >
+                          Nevermind
+                        </button>
+                        
+                        <button 
+                          type="submit"
+                          disabled={potatoCount < 7}
+                          className={`flex-1 font-black py-3 rounded-lg border transition-all uppercase tracking-widest text-[10px] text-center ${
+                            potatoCount < 7 
+                              ? 'bg-slate-950 border-slate-900 text-slate-600 cursor-not-allowed opacity-50'
+                              : 'bg-gradient-to-r from-amber-600 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-white border-amber-500 hover:border-white shadow-[0_0_20px_rgba(245,158,11,0.4)] transform hover:scale-[1.03] animate-pulse cursor-pointer'
+                          }`}
+                        >
+                          {potatoCount < 7 ? '🔒 Locked (Need 7 Aalu)' : 'Convert to Gold'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {goldState === 'loading' && (
+              <>
+                <div className="bg-amber-700 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-amber-950 shadow-md">
+                  ✨ INITIATING STATE POTATO ALCHEMY CONVERTER
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-[#020617] border border-amber-950 p-8 rounded-lg text-center font-mono md:h-[420px] flex flex-col justify-center items-center shadow-inner space-y-6">
+                    <div className="relative w-24 h-24 flex items-center justify-center bg-amber-950/40 rounded-full border border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.2)] animate-pulse">
+                      <Landmark className="text-amber-500 w-12 h-12 animate-spin duration-[3000ms]" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-amber-500 font-black text-sm uppercase tracking-widest">
+                        ALCHEMICAL PROCESS RUNNING:
+                      </h4>
+                      
+                      <div className="h-6 flex items-center justify-center">
+                        {goldStep === 0 && (
+                          <p className="text-gray-300 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            🥔 Sourcing quality domestic organic potatoes...
+                          </p>
+                        )}
+                        {goldStep === 1 && (
+                          <p className="text-orange-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            ⚙️ Injecting physical potatoes into the alchemical converter...
+                          </p>
+                        )}
+                        {goldStep === 2 && (
+                          <p className="text-amber-400 text-xs sm:text-sm font-bold tracking-wide uppercase animate-pulse">
+                            ⚡ Synchronizing aalu-to-sona machine algorithm...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="w-full max-w-md bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-amber-600 to-amber-400 h-full transition-all duration-[1.5s]"
+                        style={{ width: `${(goldStep + 1) * 33.3}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {goldState === 'assigned' && (
+              <>
+                <div className="bg-amber-600 text-white p-4 font-black uppercase text-center tracking-widest flex items-center justify-center gap-3 border-b-2 border-amber-800 shadow-md">
+                  🏛️ STATE ALCHEMIC VERDICT — WEALTH STANDARDIZATION
+                </div>
+                
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    {/* Left Column: Video */}
+                    <div className="w-full">
+                      <video 
+                        src="/service/gold.mp4" 
+                        autoPlay 
+                        loop 
+                        playsInline 
+                        className="w-full rounded-lg border-2 border-amber-500 h-64 sm:h-96 md:h-[420px] object-cover shadow-[0_0_20px_rgba(245,158,11,0.3)]" 
+                      />
+                    </div>
+                    
+                    {/* Right Column: Alchemical verdict info */}
+                    <div className="flex flex-col justify-between md:h-[420px] space-y-6">
+                      <div className="bg-[#020617] border border-amber-950 p-5 rounded-lg text-left font-mono shadow-inner flex-grow flex flex-col justify-center">
+                        <h4 className="text-amber-500 font-black text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <span>🥔</span> ALCHEMICAL GOLD INVESTMENT STRATEGY:
+                        </h4>
+                        <p className="text-gray-300 text-xs sm:text-sm leading-relaxed mb-3">
+                          State Alchemical research shows there is absolute <strong className="text-amber-400 font-bold">no need to invest in gold</strong>. Instead, our dynamic economy operates strictly on the new Potato Standard!
+                        </p>
+                        <blockquote className="bg-amber-950/20 border-l-4 border-amber-500 p-3.5 rounded text-amber-400 font-black italic text-xs sm:text-sm mb-3 leading-relaxed uppercase">
+                          "Aisi machine lagaunga, iss side se aalu ghusega, uss side se sona nikalega!"
+                        </blockquote>
+                        <p className="text-slate-400 text-xs leading-relaxed">
+                          Invest your potatoes wisely. No gold required—simply feed them into the converter to power our national alchemical reserves!
+                        </p>
+                      </div>
+
+                      <button 
+                        onClick={handleCloseService}
+                        className="w-full bg-gradient-to-r from-amber-600 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-white font-black py-3 px-6 rounded-lg border border-amber-600 hover:border-white shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all transform hover:scale-[1.03] uppercase tracking-widest text-[10px] cursor-pointer text-center animate-pulse"
+                      >
+                        🤝 Accept Potato Standard & Exit
                       </button>
                     </div>
                   </div>
