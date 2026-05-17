@@ -135,6 +135,8 @@ const OtpVerification = () => {
           Verify
         </button>
       </form>
+      {/* Cursed Siren */}
+      <audio autoPlay loop src="/audio/siren.mp3" />
     </div>
   );
 };

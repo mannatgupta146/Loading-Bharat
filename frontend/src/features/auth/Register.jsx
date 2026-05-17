@@ -387,7 +387,7 @@ const Register = () => {
       )}
 
       {/* Cursed Audio Player */}
-      <audio ref={audioRef} loop src="/song/Never gonna give you up.mp3" />
+      <audio ref={audioRef} loop src="/audio/robot-song.mp3" />
       
       {isPlaying && (
         <div className="fixed bottom-4 left-4 bg-white border-2 border-[#003366] p-2 shadow-2xl flex items-center gap-3 z-50">
