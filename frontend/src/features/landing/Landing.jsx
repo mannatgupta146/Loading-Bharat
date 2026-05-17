@@ -247,27 +247,25 @@ const Landing = () => {
   // Handle Step 1: 12-second biometric scan and audio broadcast
   useEffect(() => {
     if (introStep !== 1) return;
-    
+
     // Play entry music immediately on load
     const playAudio = () => {
       if (introAudioRef.current) {
         introAudioRef.current.play().catch((err) => {
-          console.log("Autoplay was prevented by the browser. Waiting for interaction...", err);
+          console.log("Autoplay was prevented. Adding interaction listeners.", err);
+          // Fallback for browsers that block autoplay
+          const handleInteraction = () => {
+            introAudioRef.current.play();
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
+          };
+          window.addEventListener('click', handleInteraction);
+          window.addEventListener('keydown', handleInteraction);
         });
       }
     };
 
-    // Attempt immediately
     playAudio();
-
-    // Also attempt on first user interaction to guarantee audio plays
-    const handleInteraction = () => {
-      playAudio();
-      window.removeEventListener('click', handleInteraction);
-      window.removeEventListener('keydown', handleInteraction);
-    };
-    window.addEventListener('click', handleInteraction);
-    window.addEventListener('keydown', handleInteraction);
     
     const statusMap = {
       12: "📡 Establishing secure quantum communication tunnel...",
@@ -304,6 +302,12 @@ const Landing = () => {
 
     return () => {
       clearInterval(countdownInterval);
+      // Clean up interaction listeners if they were added
+      const handleInteraction = () => {
+        if (introAudioRef.current) introAudioRef.current.play();
+        window.removeEventListener('click', handleInteraction);
+        window.removeEventListener('keydown', handleInteraction);
+      };
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
     };
@@ -660,6 +664,8 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center relative overflow-x-hidden select-none font-sans">
+      <audio ref={introAudioRef} src="/landing/entry.mp3" preload="auto" />
+      <audio ref={modiChantAudioRef} src="/landing/chant.mp3" preload="auto" loop />
       {/* Floating State Banner Ticker */}
       <div className="w-full bg-red-950/80 border-b border-red-500/30 text-red-200 text-[11px] sm:text-xs font-mono py-2.5 px-4 sticky top-0 z-40 backdrop-blur-md flex flex-col sm:flex-row justify-between items-center gap-2 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2">
