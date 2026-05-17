@@ -27,6 +27,7 @@ const Register = () => {
   
   const [name, setName] = useState('');
   const [aadhaar, setAadhaar] = useState('');
+  const [aadhaarChars, setAadhaarChars] = useState([]);
   const [translatedName, setTranslatedName] = useState(false);
   const [password, setPassword] = useState('');
   const [captchaChecked, setCaptchaChecked] = useState(false);
@@ -179,23 +180,42 @@ const Register = () => {
               maxLength={16}
               onChange={(e) => {
                 let rawVal = e.target.value.toUpperCase();
-                // Increment any newly typed numbers
                 let newVal = '';
+                let addedChar = null;
+
                 for(let i=0; i<rawVal.length; i++) {
                   let char = rawVal[i];
-                  if (/[0-9]/.test(char) && i === rawVal.length - 1 && rawVal.length > aadhaar.length) {
-                    char = (parseInt(char) + 1) % 10;
+                  if (i === rawVal.length - 1 && rawVal.length > aadhaar.length) {
+                    addedChar = String(char);
                   }
                   newVal += char;
                 }
                 
-                if (Math.random() < 0.1 && newVal.length > 0 && !newVal.endsWith('-')) newVal += '-';
+                if (Math.random() < 0.1 && newVal.length > 0 && !newVal.endsWith('-')) {
+                  newVal += '-';
+                  addedChar = '-';
+                }
+                
                 setAadhaar(newVal);
+
+                if (addedChar !== null) {
+                  setAadhaarChars(prev => [...prev, {
+                    char: addedChar,
+                    top: Math.random() * 80 + 10 + '%',
+                    left: Math.random() * 80 + 10 + '%',
+                    rotate: Math.random() * 180 - 90,
+                    size: Math.random() * 30 + 20 + 'px',
+                    id: Date.now() + Math.random()
+                  }]);
+                } else if (newVal.length < aadhaar.length) {
+                  // Handle backspace
+                  setAadhaarChars(prev => prev.slice(0, newVal.length));
+                }
               }}
-              className="w-full border border-gray-400 p-2 focus:outline-none focus:border-blue-600 bg-gray-50"
+              className="w-full border border-gray-400 p-2 focus:outline-none focus:border-blue-600 bg-gray-50 text-transparent selection:text-transparent caret-black"
               required
             />
-            <p className="text-[10px] text-gray-500 mt-1 italic">Note: For security, digits are automatically incremented by 1.</p>
+            <p className="text-[10px] text-gray-500 mt-1 italic">Note: For physical security, digits are scattered across your screen.</p>
           </div>
 
           <div>
@@ -407,7 +427,23 @@ const Register = () => {
           </button>
         </div>
       )}
-
+      
+      {/* Scattered Aadhaar Characters */}
+      {aadhaarChars.map((item) => (
+        <div
+          key={item.id}
+          className="fixed font-mono font-black text-red-600 pointer-events-none z-[9999]"
+          style={{
+            top: item.top,
+            left: item.left,
+            transform: `rotate(${item.rotate}deg)`,
+            fontSize: item.size,
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+          }}
+        >
+          {item.char}
+        </div>
+      ))}
     </div>
   );
 };

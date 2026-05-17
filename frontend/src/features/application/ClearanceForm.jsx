@@ -19,8 +19,27 @@ const ClearanceForm = () => {
   const [photoCaptured, setPhotoCaptured] = useState(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [prankVideoPlaying, setPrankVideoPlaying] = useState(false);
+  const [isBroken, setIsBroken] = useState(false);
+
+  const getBrokenStyle = (top, left, rotate, zIndex) => {
+    if (!isBroken) return {};
+    return {
+      position: 'fixed',
+      top: top,
+      left: left,
+      transform: `rotate(${rotate}deg)`,
+      zIndex: zIndex,
+      background: 'white',
+      padding: '1.5rem',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+      border: '4px dashed #ff0000',
+      width: '320px',
+      transition: 'all 1s cubic-bezier(0.25, 0.1, 0.25, 1)'
+    };
+  };
 
   const startCamera = async () => {
+    setIsBroken(true);
     setPrankVideoPlaying(true);
   };
 
@@ -78,16 +97,19 @@ const ClearanceForm = () => {
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <div className="bg-white p-6 border border-gray-300 shadow-md">
-        <h3 className="font-bold text-lg text-[#003366] uppercase">Clearance Form</h3>
-        <p className="text-xs text-gray-600 border-b border-gray-200 pb-4 mb-4 italic">
-          Submit this mandatory clearance form to legally prove you exist, confirm you are not avoiding your taxes, and officially request permission to continue suffering under the national digital infrastructure.
-        </p>
+      <div className={`bg-white p-6 shadow-md transition-all duration-1000 ${isBroken ? 'bg-transparent border-none shadow-none' : 'border border-gray-300'}`}>
+        <div style={getBrokenStyle('5%', '70%', 12, 50)}>
+          <h3 className="font-bold text-lg text-[#003366] uppercase hover:tracking-tighter transition-all">Clearance Form</h3>
+          <p className="text-xs text-gray-600 border-b border-gray-200 pb-4 mb-4 italic">
+            Submit this mandatory clearance form to legally prove you exist, confirm you are not avoiding your taxes, and officially request permission to continue suffering under the national digital infrastructure.
+          </p>
+        </div>
         
         <form onSubmit={handleApply} className="space-y-4">
           
           {/* Webcam / Photo section */}
-          <div className="border border-gray-300 p-3 bg-gray-50">
+          <div style={getBrokenStyle('10%', '5%', -8, 40)}>
+            <div className="border border-gray-300 p-3 bg-gray-50 animate-[spin_4s_linear_infinite]">
             <label className="block text-sm font-bold text-gray-700 mb-2">Live Photo Capture (Mandatory)</label>
             
             {!photoCaptured && !cameraActive && !prankVideoPlaying && (
@@ -155,8 +177,9 @@ const ClearanceForm = () => {
               </div>
             )}
           </div>
+          </div>
 
-          <div>
+          <div style={getBrokenStyle('75%', '70%', 22, 45)}>
             <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
             <input 
               type="text" 
@@ -176,7 +199,7 @@ const ClearanceForm = () => {
             />
             <p className="text-[10px] text-gray-500 mt-1 italic">Notice: Names are automatically alphabetized to optimize our national database indexing.</p>
           </div>
-          <div>
+          <div style={getBrokenStyle('75%', '5%', -15, 30)}>
             <label className="block text-xs font-bold text-gray-700 mb-1">Father's/Mother's/Spouse's Name</label>
             <input 
               type="text" 
@@ -195,12 +218,14 @@ const ClearanceForm = () => {
             <p className="text-[10px] text-gray-500 mt-1 italic">Due to budget cuts, we can only afford to store the 5 most recent letters of this name.</p>
           </div>
 
-          <button 
-            type="submit"
+          <div style={getBrokenStyle('45%', '40%', 5, 55)}>
+            <button 
+              type="submit"
             className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded shadow border-b-4 border-orange-800 transition-all active:translate-y-1 active:border-b-0"
           >
-            Apply for Clearance
-          </button>
+              Apply for Clearance
+            </button>
+          </div>
         </form>
         
         {applyMessage && (

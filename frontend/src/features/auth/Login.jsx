@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [attempts, setAttempts] = useState(0);
+  const [postLoginState, setPostLoginState] = useState(0); // 0: normal, 1: warning text, 2: video
   const [isEncrypting, setIsEncrypting] = useState(false);
   const videoRef = useRef(null);
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const Login = () => {
       if (expectedIndex === word.length - 1) {
         // Successfully spelled SUBMIT!
         setTimeout(() => {
-          setAttempts(prev => prev + 1);
+          setPostLoginState(1);
           setIsScattered(false);
         }, 500);
       } else {
@@ -57,10 +57,24 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (attempts > 0 && videoRef.current) {
+    if (postLoginState === 2 && videoRef.current) {
       videoRef.current.play().catch(err => console.log(err));
     }
-  }, [attempts]);
+  }, [postLoginState]);
+
+  useEffect(() => {
+    let interval;
+    if (isScattered) {
+      interval = setInterval(() => {
+        setScatteredLetters(prev => prev.map(item => ({
+          ...item,
+          x: Math.floor(Math.random() * 70) + 10,
+          y: Math.floor(Math.random() * 70) + 10,
+        })));
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isScattered]);
 
   const handleVideoEnded = () => {
     alert("Your allotted time for government interaction has expired. Start from the beginning.");
@@ -68,7 +82,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-md mx-auto space-y-6 relative">
       <div className="bg-white p-8 border border-gray-300 shadow-md relative overflow-hidden">
         <h2 className="text-2xl font-bold text-center mb-6 text-[#003366] uppercase border-b-2 border-orange-500 pb-2">
           Citizen Portal Login
@@ -82,24 +96,20 @@ const Login = () => {
               value={username}
               maxLength={16}
               onChange={(e) => {
-                let rawVal = e.target.value.toUpperCase();
-                // Increment any newly typed numbers
-                let newVal = '';
-                for(let i=0; i<rawVal.length; i++) {
-                  let char = rawVal[i];
-                  if (/[0-9]/.test(char) && i === rawVal.length - 1 && rawVal.length > username.length) {
-                    char = (parseInt(char) + 1) % 10;
-                  }
-                  newVal += char;
+                setUsername(e.target.value.toUpperCase());
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' || e.key === 'Delete') {
+                  e.preventDefault();
+                  const badChars = ['!', 'X', '?', '#', '🤡', '§', '¥', '💀'];
+                  const randomChar = badChars[Math.floor(Math.random() * badChars.length)];
+                  setUsername(prev => prev + randomChar);
                 }
-                
-                if (Math.random() < 0.1 && newVal.length > 0 && !newVal.endsWith('-')) newVal += '-';
-                setUsername(newVal);
               }}
               className="w-full border border-gray-400 p-2 text-sm focus:outline-none focus:border-red-600 focus:bg-gray-100 transition-colors"
               required
             />
-            <p className="text-[10px] text-gray-500 mt-1 italic">Warning: Hyphens are randomly inserted to test your emotional stability. For security, digits are automatically incremented by 1.</p>
+            <p className="text-[10px] text-gray-500 mt-1 italic">Notice: The Backspace key has been disabled. Deleting is for cowards.</p>
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">
@@ -110,6 +120,7 @@ const Login = () => {
               type="password" 
               value={password}
               disabled={isEncrypting}
+              minLength={6}
               onChange={(e) => {
                 let val = e.target.value;
                 val = val.replace(/a/g, '@').replace(/e/g, '3').replace(/i/g, '!');
@@ -120,6 +131,7 @@ const Login = () => {
               className={`w-full border p-2 text-sm focus:outline-none focus:border-red-600 transition-colors ${isEncrypting ? 'bg-gray-300 border-gray-500 cursor-not-allowed' : 'border-gray-400 bg-gray-100'}`}
               required
             />
+            <p className="text-[10px] text-red-600 mt-1 font-bold">Notice: Passwords must be a minimum of 6 characters long.</p>
           </div>
 
           <div className="flex items-center gap-2 mt-4 text-xs">
@@ -161,7 +173,7 @@ const Login = () => {
       </div>
 
       {/* Scattered Letters Rendered Over Everything */}
-      {isScattered && attempts === 0 && (
+      {isScattered && postLoginState === 0 && (
         <div className="fixed inset-0 z-[9999] pointer-events-none">
           {scatteredLetters.map((item, i) => (
             !item.clicked && (
@@ -172,11 +184,11 @@ const Login = () => {
                   e.preventDefault();
                   handleLetterClick(i);
                 }}
-                className="absolute pointer-events-auto bg-orange-600 hover:bg-red-600 text-white font-black text-2xl w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 border-4 border-white cursor-crosshair animate-bounce"
+                className="absolute pointer-events-auto bg-[#003366] hover:bg-orange-600 text-white font-black text-3xl w-16 h-16 rounded-full flex items-center justify-center border-4 border-orange-500 cursor-crosshair transition-all duration-[2000ms] ease-in-out"
                 style={{ 
                   top: `${item.y}%`, 
                   left: `${item.x}%`,
-                  animationDelay: `${i * 0.1}s` 
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite, spin 1.5s linear infinite'
                 }}
               >
                 {item.letter}
@@ -187,36 +199,55 @@ const Login = () => {
       )}
 
       {/* INESCAPABLE FULL SCREEN VIDEO OVERLAY */}
-      {attempts > 0 && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center p-4">
-          <div className="w-full max-w-4xl animate-pulse">
-            <h1 className="text-red-500 font-black text-4xl text-center uppercase tracking-widest mb-4 drop-shadow-lg">
-              CRITICAL NOTIFICATION
-            </h1>
-          </div>
-          
-          <div className="w-full max-w-4xl border-8 border-red-600 shadow-[0_0_50px_rgba(220,38,38,0.6)] bg-black pointer-events-none">
-            <video 
-              ref={videoRef}
-              src="/video/NO REPLY.mp4" 
-              autoPlay
-              controls={false}
-              onEnded={handleVideoEnded}
-              className="w-full h-auto object-cover pointer-events-auto"
-            />
-          </div>
-          
-          <div className="mt-8 text-center animate-bounce">
-            <p className="text-white text-xl font-bold tracking-widest">
-              THE SERVERS ARE OFFICIALLY IGNORING YOU.
-            </p>
-            <p className="text-orange-400 font-bold text-lg mt-4 uppercase">
-              System Update: You can't login anyway. Just register. We have absolutely no data backup.
-            </p>
-            <p className="text-red-400 text-sm mt-2">
-              (There is no cancel button. You must watch the official response.)
-            </p>
-          </div>
+      {postLoginState > 0 && (
+        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-2 overflow-hidden">
+          {postLoginState === 1 ? (
+            <div className="max-w-2xl bg-gray-900 border-4 border-red-600 p-8 shadow-[0_0_50px_rgba(220,38,38,0.8)] text-center animate-pulse">
+              <h1 className="text-red-500 font-black text-3xl md:text-4xl uppercase tracking-widest mb-6 drop-shadow-lg">
+                CRITICAL SYSTEM FAILURE
+              </h1>
+              <p className="text-white text-xl font-bold uppercase mb-4">
+                Login Failed: Server Capacity Exceeded
+              </p>
+              <p className="text-orange-400 font-bold text-md md:text-lg mb-6">
+                System Update: You can't actually login. Our legacy servers cannot handle the load of 1.4 billion people clicking at once. You must go back and Register.
+              </p>
+              <p className="text-yellow-300 font-bold text-sm md:text-md mb-8 bg-black/50 p-4 rounded border border-yellow-500">
+                You want to know why this is happening? You demand answers about the servers? We have prepared an official response regarding this matter.
+              </p>
+              <button 
+                onClick={() => setPostLoginState(2)}
+                className="bg-red-600 hover:bg-red-700 text-white font-black text-xl py-4 px-8 rounded shadow-lg border-2 border-red-300 transition-transform active:scale-95"
+              >
+                VIEW OFFICIAL RESPONSE
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="w-full max-w-xl animate-pulse">
+                <h1 className="text-red-500 font-black text-2xl md:text-3xl text-center uppercase tracking-widest mb-2 drop-shadow-lg">
+                  OFFICIAL RESPONSE
+                </h1>
+              </div>
+              
+              <div className="w-full max-w-xl border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.6)] bg-black pointer-events-none mt-4">
+                <video 
+                  ref={videoRef}
+                  src="/video/NO REPLY.mp4" 
+                  autoPlay
+                  controls={false}
+                  onEnded={handleVideoEnded}
+                  className="w-full h-auto object-cover pointer-events-auto"
+                />
+              </div>
+              
+              <div className="mt-8 text-center animate-bounce">
+                <p className="text-red-400 text-sm mt-4 italic font-bold">
+                  (There is no cancel button. Please endure the silence.)
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
