@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import { HelpCircle, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const Layout = () => {
+  const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
@@ -14,6 +15,40 @@ const Layout = () => {
   
   const location = useLocation();
   const isInternalPage = location.pathname === '/dashboard' || location.pathname === '/services';
+
+  // Prevent reload / page refresh and restart registration
+  useEffect(() => {
+    const navigationEntries = window.performance.getEntriesByType('navigation');
+    const isReload = navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
+    const protectedPaths = ['/otp', '/clearance', '/dashboard', '/services'];
+    
+    if (isReload && protectedPaths.includes(location.pathname)) {
+      // Wiping state lock and local storages
+      localStorage.removeItem('stateMediaLock');
+      sessionStorage.clear();
+      
+      // Navigate back to step 1
+      navigate('/register', { replace: true });
+      
+      // Popup high-warning bureaucratic decree
+      alert("❌ CRITICAL VIOLATION DETECTED!\n\nYou have refreshed your secure browser connection during a National Onboarding Clearance session.\n\nUnder digital compliance sub-clause 44-B, your temporary registration has been completely voided. You must restart your citizen application from Step 1.");
+    }
+  }, [location.pathname, navigate]);
+
+  // Window-level beforeunload warn triggers
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const protectedPaths = ['/otp', '/clearance', '/dashboard', '/services'];
+      if (protectedPaths.includes(location.pathname)) {
+        e.preventDefault();
+        e.returnValue = 'Warning: Refreshing now will completely reset your government registration progress!';
+        return 'Warning: Refreshing now will completely reset your government registration progress!';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [location.pathname]);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,7 +162,7 @@ const Layout = () => {
             <HelpCircle /> SarkariGPT
           </button>
         ) : (
-          <div className="bg-white border border-gray-400 shadow-2xl rounded-t-lg w-80 flex flex-col h-96">
+          <div className="bg-white border border-gray-400 shadow-2xl rounded-t-lg w-[380px] sm:w-[440px] flex flex-col h-[520px]">
             <div className="bg-[#003366] text-white p-3 rounded-t-lg flex justify-between items-center border-b-2 border-orange-500">
               <div>
                 <div className="font-bold">SarkariGPT</div>

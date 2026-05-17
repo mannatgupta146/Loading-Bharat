@@ -114,16 +114,7 @@ const NewsFeed = () => {
   const [buttonEscapes, setButtonEscapes] = useState(0);
   const [buttonPos, setButtonPos] = useState({ top: '60%', left: '50%' });
 
-  useEffect(() => {
-    if (activeVideo || isLurking || showAnnoyingPopup || rickrollActive) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [activeVideo, isLurking, showAnnoyingPopup, rickrollActive]);
+
 
   // Initial loitering check: 10 seconds of passiveness
   useEffect(() => {
