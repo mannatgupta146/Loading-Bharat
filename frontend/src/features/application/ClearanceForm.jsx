@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import useRegistrationGuard from '../auth/useRegistrationGuard';
 
 const API_URL = 'http://localhost:5000/api';
 
 const ClearanceForm = () => {
   const navigate = useNavigate();
+  useRegistrationGuard(); // ⛔ Intercepts reload & back-button during mid-registration
   const [applyMessage, setApplyMessage] = useState(null);
   const [applyStatus, setApplyStatus] = useState(null); 
 

@@ -1,1 +1,0 @@
-see store register if person registered but if he reload anywhere then cancel register and  move to register page so anybe add a warning 

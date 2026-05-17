@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useRegistrationGuard from './useRegistrationGuard';
 
 const OtpVerification = () => {
   const navigate = useNavigate();
+  useRegistrationGuard(); // ⛔ Intercepts reload & back-button during mid-registration
 
   const generateProblem = () => {
     const a = Math.floor(Math.random() * 50) + 10;

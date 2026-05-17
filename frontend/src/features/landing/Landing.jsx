@@ -919,6 +919,15 @@ const Landing = () => {
                     </div>
                   )}
                 </div>
+                {/* Tiny hidden easter egg link to /ready standalone route */}
+                <div className="text-center mt-2">
+                  <a
+                    href="/ready"
+                    className="text-[8px] text-slate-700 hover:text-slate-500 font-mono uppercase tracking-widest underline underline-offset-2 transition-colors"
+                  >
+                    Alternative Entry Portal (unstable)
+                  </a>
+                </div>
               </div>
             </div>
           </div>

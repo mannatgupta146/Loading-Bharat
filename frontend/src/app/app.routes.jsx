@@ -8,6 +8,7 @@ import OtpVerification from '../features/auth/OtpVerification.jsx';
 import ClearanceForm from '../features/application/ClearanceForm.jsx';
 import Dashboard from '../features/dashboard/Dashboard.jsx';
 import Services from '../features/dashboard/Services.jsx';
+import NotFound from '../features/layout/NotFound.jsx';
 
 export const router = createBrowserRouter([
   {
@@ -28,5 +29,9 @@ export const router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "services", element: <Services /> }
     ]
+  },
+  {
+    path: "*",
+    element: <NotFound />
   }
 ]);
