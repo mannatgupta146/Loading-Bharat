@@ -18,8 +18,13 @@ const ClearanceForm = () => {
   const canvasRef = useRef(null);
   const [photoCaptured, setPhotoCaptured] = useState(null);
   const [cameraActive, setCameraActive] = useState(false);
+  const [prankVideoPlaying, setPrankVideoPlaying] = useState(false);
 
   const startCamera = async () => {
+    setPrankVideoPlaying(true);
+  };
+
+  const executeRealCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
@@ -85,7 +90,7 @@ const ClearanceForm = () => {
           <div className="border border-gray-300 p-3 bg-gray-50">
             <label className="block text-sm font-bold text-gray-700 mb-2">Live Photo Capture (Mandatory)</label>
             
-            {!photoCaptured && !cameraActive && (
+            {!photoCaptured && !cameraActive && !prankVideoPlaying && (
               <div className="space-y-3">
                 <button 
                   type="button" 
@@ -97,8 +102,27 @@ const ClearanceForm = () => {
               </div>
             )}
 
+            {/* In-line Laughing Prank Video */}
+            {prankVideoPlaying && (
+              <div className="relative w-full h-64 bg-black rounded overflow-hidden border-2 border-gray-400">
+                <video 
+                  src="/video/camera.mp4" 
+                  autoPlay 
+                  className="w-full h-full object-cover"
+                  onEnded={() => {
+                    setPrankVideoPlaying(false);
+                    executeRealCamera();
+                  }}
+                />
+                <div className="absolute top-2 left-2 flex items-center gap-2 bg-black/50 px-2 py-1 rounded">
+                  <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
+                  <span className="text-white text-[10px] font-bold">Govt. Observer Active</span>
+                </div>
+              </div>
+            )}
+
             {/* Always mount video so ref works, hide when inactive */}
-            <div className={`relative ${!cameraActive && !photoCaptured ? 'hidden' : ''} ${photoCaptured ? 'hidden' : ''}`}>
+            <div className={`relative ${!cameraActive && !photoCaptured ? 'hidden' : ''} ${photoCaptured || prankVideoPlaying ? 'hidden' : ''}`}>
               <video ref={videoRef} autoPlay playsInline className="w-full h-64 object-cover bg-black rounded" />
               <button 
                 type="button" 
