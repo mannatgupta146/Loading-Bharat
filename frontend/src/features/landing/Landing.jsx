@@ -708,14 +708,14 @@ const Landing = () => {
               {/* Status Ticker details */}
               <div className="w-full bg-slate-900/60 border border-slate-800 p-6 rounded-2xl mb-6 backdrop-blur-md max-w-sm">
                 <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mb-2">
-                  🔒 Compliance Lock Status: {introTimeLeft}s remaining
+                  🔒 Compliance Lock: {introTimeLeft}s ({getLoadingBarState().label})
                 </p>
                 
-                {/* Progress bar */}
-                <div className="w-full h-2.5 bg-slate-950 border border-slate-800 rounded-full overflow-hidden mb-4 relative shadow-inner">
+                {/* Progress bar with dynamic shake vibration */}
+                <div className={`w-full h-2.5 bg-slate-950 border border-slate-800 rounded-full overflow-hidden mb-4 relative shadow-inner transition-colors duration-300 ${getLoadingBarState().vibrate ? 'animate-shake' : ''}`}>
                   <div 
-                    className="h-full bg-gradient-to-r from-red-600 via-amber-500 to-green-500 shadow-[0_0_12px_rgba(245,158,11,0.6)] rounded-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(245,158,11,0.5)]"
-                    style={{ width: `${((12 - introTimeLeft) / 12) * 100}%` }}
+                    className={`h-full bg-gradient-to-r shadow-lg rounded-full transition-all duration-300 ease-out ${getLoadingBarState().color}`}
+                    style={{ width: `${getLoadingBarState().percent}%` }}
                   />
                 </div>
 
@@ -747,12 +747,17 @@ const Landing = () => {
         .animate-laser-scan {
           animation: laser-scan 2.5s ease-in-out infinite;
         }
-        @keyframes scanning-image {
-          0%, 100% { transform: scale(1.0) rotate(-2deg); }
-          50% { transform: scale(1.12) rotate(2deg); }
+        @keyframes shake {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+          40% { transform: translate(2px, -1px) rotate(0.5deg); }
+          60% { transform: translate(-2px, -1px) rotate(0deg); }
+          80% { transform: translate(2px, 1px) rotate(0.5deg); }
         }
-        .animate-scanning-image {
-          animation: scanning-image 6s ease-in-out infinite;
+        .animate-shake {
+          animation: shake 0.15s infinite;
+          border-color: rgba(239, 68, 68, 0.8) !important;
+          box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
         }
       `}</style>
     </div>
