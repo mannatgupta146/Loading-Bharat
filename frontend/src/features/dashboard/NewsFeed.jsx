@@ -210,6 +210,22 @@ const NewsFeed = () => {
         .animate-gentle-float {
           animation: gentle-float 4s ease-in-out infinite;
         }
+        .custom-scrollbar-dark::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .custom-scrollbar-dark::-webkit-scrollbar-track {
+          background: #020617;
+          border-radius: 4px;
+        }
+        .custom-scrollbar-dark::-webkit-scrollbar-thumb {
+          background: #b91c1c;
+          border-radius: 4px;
+          border: 2px solid #020617;
+        }
+        .custom-scrollbar-dark::-webkit-scrollbar-thumb:hover {
+          background: #ef4444;
+        }
       `}</style>
       
       <div className="bg-[#003366] text-white p-3 border-b border-[#002244] flex justify-between items-center">
