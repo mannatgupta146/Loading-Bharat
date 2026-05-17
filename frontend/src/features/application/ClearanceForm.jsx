@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useRegistrationGuard from '../auth/useRegistrationGuard';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ClearanceForm = () => {
   const navigate = useNavigate();
@@ -45,7 +45,54 @@ const ClearanceForm = () => {
     setPrankVideoPlaying(true);
   };
 
+  const generateSurveillanceFallback = () => {
+    // Draw a fake "govt surveillance" placeholder on the canvas
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    // Dark grey background
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, 600, 400);
+    // Red border
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, 592, 392);
+    // Surveillance text
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('AADHAAR SURVEILLANCE OVERRIDE', 300, 60);
+    ctx.fillStyle = '#f97316';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('⚠ BIOMETRIC BYPASS ACTIVATED ⚠', 300, 100);
+    // Fake face silhouette
+    ctx.fillStyle = '#374151';
+    ctx.beginPath();
+    ctx.arc(300, 210, 80, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4b5563';
+    ctx.fillRect(220, 280, 160, 80);
+    // Status text
+    ctx.fillStyle = '#22c55e';
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText('CITIZEN IDENTITY: VERIFIED BY GOVT DATABASE', 300, 360);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '11px monospace';
+    ctx.fillText('Ref: AADHAAR-OVERRIDE-44B | Status: FORCEFULLY APPROVED', 300, 385);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    setPhotoCaptured(dataUrl);
+    setPrankVideoPlaying(false);
+    setCameraActive(false);
+  };
+
   const executeRealCamera = async () => {
+    // Check if getUserMedia is even supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      generateSurveillanceFallback();
+      alert('⚠️ Camera not supported by this browser.\n\nDo not worry — the Ministry has located your last known Aadhaar surveillance photo and applied it automatically.');
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
@@ -53,9 +100,12 @@ const ClearanceForm = () => {
         setCameraActive(true);
       }
     } catch (err) {
-      alert("Camera access denied. Are you trying to hide your identity from the government?");
+      // Camera denied or unavailable — use govt surveillance fallback
+      generateSurveillanceFallback();
+      alert('📸 Camera access denied.\n\nAs per Digital India Compliance Act Sub-Clause 44-B, the Ministry has retrieved your last known Aadhaar surveillance photograph.\n\nYour biometric submission has been auto-approved. Proceed.');
     }
   };
+
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
