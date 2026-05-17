@@ -120,6 +120,104 @@ const Landing = () => {
     }
   };
 
+  // Dynamic helper for automatic chaotic unhinged loading bar progress mapping during Step 1
+  const getLoadingBarState = () => {
+    switch (introTimeLeft) {
+      case 12:
+        return {
+          percent: 8,
+          label: "8%",
+          color: "from-blue-600 to-indigo-500 animate-pulse",
+          vibrate: false
+        };
+      case 11:
+        return {
+          percent: 35,
+          label: "35%",
+          color: "from-amber-600 to-amber-500",
+          vibrate: false
+        };
+      case 10: // Head-tilt violation
+        return {
+          percent: 12,
+          label: "12% (🚨 DOCKED -23% PENALTY)",
+          color: "from-red-600 to-red-500",
+          vibrate: true
+        };
+      case 9:
+        return {
+          percent: 42,
+          label: "42%",
+          color: "from-amber-500 to-yellow-400",
+          vibrate: false
+        };
+      case 8:
+        return {
+          percent: 78,
+          label: "78%",
+          color: "from-emerald-500 to-green-500",
+          vibrate: false
+        };
+      case 7: // Posture variance
+        return {
+          percent: 30,
+          label: "30% (🚨 CLERICAL REGRESSION ERROR)",
+          color: "from-red-500 to-amber-500",
+          vibrate: true
+        };
+      case 6:
+        return {
+          percent: 55,
+          label: "55%",
+          color: "from-amber-500 to-yellow-500",
+          vibrate: false
+        };
+      case 5:
+        return {
+          percent: 99,
+          label: "99.9% (STABILIZING...)",
+          color: "from-green-500 to-emerald-400 animate-pulse",
+          vibrate: false
+        };
+      case 4: // Non-governmental thoughts
+        return {
+          percent: 0,
+          label: "NaN% (🚨 MIND COMPLIANCE FLOOD)",
+          color: "from-pink-600 to-purple-600",
+          vibrate: true
+        };
+      case 3:
+        return {
+          percent: 45,
+          label: "45% (RE-CALIBRATING TELEMETRY)",
+          color: "from-amber-500 to-yellow-500",
+          vibrate: false
+        };
+      case 2:
+        return {
+          percent: 88,
+          label: "88%",
+          color: "from-emerald-500 to-green-400",
+          vibrate: false
+        };
+      case 1:
+        return {
+          percent: 99.99,
+          label: "99.999% (⏳ PENDING ADMINISTRATIVE SIGNATURE)",
+          color: "from-emerald-400 to-green-300 animate-pulse",
+          vibrate: true
+        };
+      case 0:
+      default:
+        return {
+          percent: 100,
+          label: "100% (COMPLETE)",
+          color: "from-green-500 to-emerald-500",
+          vibrate: false
+        };
+    }
+  };
+
   // Handle Step 1: 12-second biometric scan and audio broadcast
   useEffect(() => {
     if (introStep !== 1) return;
