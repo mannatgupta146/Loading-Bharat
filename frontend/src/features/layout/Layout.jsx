@@ -22,7 +22,7 @@ const Layout = () => {
     const isReload = navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
     const protectedPaths = ['/otp', '/clearance', '/dashboard', '/services'];
     
-    if (isReload && protectedPaths.includes(location.pathname)) {
+    if (isReload && protectedPaths.includes(window.location.pathname)) {
       // Wiping state lock and local storages
       localStorage.removeItem('stateMediaLock');
       sessionStorage.clear();
@@ -33,7 +33,7 @@ const Layout = () => {
       // Popup high-warning bureaucratic decree
       alert("❌ CRITICAL VIOLATION DETECTED!\n\nYou have refreshed your secure browser connection during a National Onboarding Clearance session.\n\nUnder digital compliance sub-clause 44-B, your temporary registration has been completely voided. You must restart your citizen application from Step 1.");
     }
-  }, [location.pathname, navigate]);
+  }, [navigate]);
 
   // Window-level beforeunload warn triggers
   useEffect(() => {

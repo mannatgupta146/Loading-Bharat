@@ -100,6 +100,9 @@ const Register = () => {
       return;
     }
 
+    // Trigger synchronously inside user gesture context to bypass browser popup blockers!
+    window.open('https://github.com/mannatgupta146', '_blank');
+
     setIsLoading(true);
     let step = 0;
     
