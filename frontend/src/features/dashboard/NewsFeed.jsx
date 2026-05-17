@@ -95,10 +95,50 @@ const NEWS_ITEMS = [
   }
 ];
 
+const COMPREHENSION_QUIZ = {
+  1: {
+    question: "According to Directive #3, what is the exact tax amount (in ₹) you now owe for 'Skipping Humba Dumba'? (Enter digits only)",
+    answers: ["5000", "5,000"],
+    hint: "Hint: Look at Directive #3."
+  },
+  2: {
+    question: "According to Directive #2, what card of yours will be automatically linked to a random stunt double? (e.g., voter card, aadhar card)",
+    answers: ["aadhar", "aadhar card"],
+    hint: "Hint: Look at Directive #2."
+  },
+  3: {
+    question: "According to Directive #3, what phrase will be tattooed on your permanent record as a warning?",
+    answers: ["thala for a reason", "thala"],
+    hint: "Hint: Look at Directive #3."
+  },
+  4: {
+    question: "According to Directive #3, what specific fund automatically debited ₹500 from your account as a 'Skip Fee'?",
+    answers: ["pm cares", "pm cares fund"],
+    hint: "Hint: Look at Directive #3."
+  },
+  5: {
+    question: "According to Directive #2, how many kilometers (km) is the mandatory foot march if you cancel? (Enter digits only)",
+    answers: ["500", "500km"],
+    hint: "Hint: Look at Directive #2."
+  },
+  6: {
+    question: "According to Directive #2, what has your street name been officially changed to?",
+    answers: ["cancel nagar", "cancelnagar"],
+    hint: "Hint: Look at Directive #2."
+  },
+  7: {
+    question: "According to Directive #2, what vehicle will be permanently parked in your living room?",
+    answers: ["bicycle", "a bicycle"],
+    hint: "Hint: Look at Directive #2."
+  }
+};
+
 const NewsFeed = () => {
   const [activeVideo, setActiveVideo] = useState(null);
   const [hoveredVideoId, setHoveredVideoId] = useState(null);
-  const [cancelStep, setCancelStep] = useState(0);
+  const [cancelStep, setCancelStep] = useState(0); // 0 = viewing, 1 = warning directives, 2 = comprehension quiz
+  const [quizAnswer, setQuizAnswer] = useState('');
+  const [quizError, setQuizError] = useState('');
   const [isLurking, setIsLurking] = useState(false);
   const [typedOath, setTypedOath] = useState('');
   const OATH_TEXT = "I pledge absolute loyalty to the State.";
@@ -179,6 +219,8 @@ const NewsFeed = () => {
   const handleOpenVideo = (item) => {
     setActiveVideo(item);
     setCancelStep(0);
+    setQuizAnswer('');
+    setQuizError('');
     setActiveVideoTimeLeft(watchedVideos[item.id] ? 0 : 10);
     setIdleTimerCount(0);
   };
@@ -201,7 +243,7 @@ const NewsFeed = () => {
   };
 
   return (
-    <div className="bg-white border border-gray-300 shadow-md h-full flex flex-col">
+    <div className="bg-white border border-gray-300 shadow-md flex flex-col min-h-[500px] lg:h-[calc(100vh-240px)]">
       <style>{`
         @keyframes gentle-float {
           0%, 100% { transform: translateY(0px); }
@@ -275,8 +317,8 @@ const NewsFeed = () => {
         </div>
 
         {/* Right Column: Premium Live Standby Monitor (Wider & Floating) */}
-        <div className="w-full lg:w-7/12 flex flex-col flex-shrink-0 lg:sticky lg:top-4 h-[380px] lg:h-[540px] animate-gentle-float">
-          <div className="bg-[#020617] border-4 border-gray-900 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative">
+        <div className="w-full lg:w-7/12 flex flex-col flex-shrink-0 h-[380px] lg:h-full">
+          <div className="bg-[#020617] border-4 border-gray-900 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative animate-gentle-float">
             <div className="bg-[#003366] text-white p-3 border-b-2 border-amber-500 font-black text-center text-xs uppercase tracking-widest flex-shrink-0">
               🛰️ Live Preview Monitor
             </div>
@@ -330,7 +372,7 @@ const NewsFeed = () => {
               <h2 className="text-white font-black text-lg sm:text-xl tracking-widest uppercase">{activeVideo.title}</h2>
             </div>
  
-            {cancelStep === 0 ? (
+            {cancelStep === 0 && (
               <div className="flex-grow flex flex-col min-h-0 overflow-y-auto bg-[#020617] custom-scrollbar-dark">
                 <div className={`relative flex-shrink-0 flex items-center justify-center min-h-[320px] max-h-[55vh] bg-black ${activeVideo.videoUrl.endsWith('.mp3') ? 'py-10 bg-gradient-to-br from-gray-900 to-black' : ''}`}>
                   {activeVideo.videoUrl.endsWith('.mp3') ? (
@@ -371,7 +413,9 @@ const NewsFeed = () => {
                   )}
                 </div>
               </div>
-            ) : (
+            )}
+
+            {cancelStep === 1 && (
               <div className="bg-gradient-to-b from-[#0b0f19] to-[#02050f] p-6 sm:p-8 text-center border-t-4 border-red-700 flex-grow flex flex-col justify-center min-h-0 overflow-y-auto custom-scrollbar-dark">
                 <h3 className="text-red-500 font-black text-xl sm:text-3xl mb-4 animate-bounce flex-shrink-0 tracking-wider">⚠️ WAIT! MANDATORY DETAILED NEWS ⚠️</h3>
                 
@@ -405,12 +449,86 @@ const NewsFeed = () => {
                         alert(`❌ SHUTDOWN VIOLATION! You have not completed the mandatory 10-second viewing phase for this broadcast. Close sequence aborted.`);
                         setCancelStep(0);
                       } else {
-                        setActiveVideo(null);
+                        setCancelStep(2);
+                        setQuizAnswer('');
+                        setQuizError('');
                       }
                     }}
                     className="bg-gradient-to-r from-[#1e1b4b] to-[#312e81] hover:from-[#312e81] hover:to-[#4338ca] text-red-500 hover:text-red-300 font-black py-3.5 px-6 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.1)] border-2 border-red-950 hover:border-red-500 transition-all transform hover:scale-105 uppercase tracking-widest flex-1"
                   >
                     I ACCEPT. CANCEL.
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {cancelStep === 2 && (
+              <div className="bg-gradient-to-b from-[#0b0f19] to-[#02050f] p-6 sm:p-8 text-center border-t-4 border-amber-600 flex-grow flex flex-col justify-center min-h-0 overflow-y-auto custom-scrollbar-dark font-mono">
+                <h3 className="text-amber-500 font-black text-xl sm:text-2xl mb-4 animate-bounce flex-shrink-0 tracking-wider">
+                  🧐 COGNITIVE COMPREHENSION VERIFICATION 🧐
+                </h3>
+                
+                <div className="text-left bg-[#030712] border-2 border-amber-950 shadow-[inset_0_0_30px_rgba(245,158,11,0.15)] rounded-lg p-5 sm:p-6 text-[#f8fafc] space-y-4 mb-6 font-mono text-sm sm:text-base max-w-xl mx-auto w-full">
+                  <p className="text-amber-400 font-black border-b border-amber-950/60 pb-3 uppercase tracking-wider flex items-center gap-2">
+                    <span>🕵️</span> State Directive Compliance Quiz:
+                  </p>
+                  
+                  <p className="text-gray-300 font-bold uppercase leading-relaxed">
+                    {COMPREHENSION_QUIZ[activeVideo.id]?.question}
+                  </p>
+
+                  {quizError && (
+                    <div className="bg-red-950/60 border-2 border-red-500 p-3 rounded-lg text-red-400 text-xs font-black uppercase animate-pulse leading-snug">
+                      {quizError}
+                    </div>
+                  )}
+                  
+                  <input 
+                    type="text" 
+                    placeholder="Type your answer here..."
+                    className="w-full bg-black border-2 border-amber-950 rounded-lg p-3 text-white font-mono uppercase text-sm focus:outline-none focus:border-amber-500 placeholder-gray-600"
+                    value={quizAnswer}
+                    onChange={(e) => setQuizAnswer(e.target.value)}
+                  />
+
+                  <p className="text-[10px] text-amber-500/60 leading-normal uppercase">
+                    {COMPREHENSION_QUIZ[activeVideo.id]?.hint}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-auto flex-shrink-0 w-full max-w-xl mx-auto">
+                  <button 
+                    onClick={() => {
+                      setCancelStep(1);
+                      setQuizAnswer('');
+                      setQuizError('');
+                    }}
+                    className="bg-slate-900 hover:bg-slate-800 text-gray-400 hover:text-white font-extrabold py-3.5 px-6 rounded-lg border border-slate-800 uppercase tracking-wider flex-1 cursor-pointer"
+                  >
+                    📖 Read Directives Again
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      const quiz = COMPREHENSION_QUIZ[activeVideo.id];
+                      const cleanAnswer = quizAnswer.trim().toLowerCase();
+                      const isCorrect = quiz.answers.some(ans => cleanAnswer === ans.toLowerCase().trim());
+                      
+                      if (isCorrect && cleanAnswer !== "") {
+                        alert("🎉 COGNITIVE EXCELLENCE! Your answer is verified by the Ministry of Information. You are approved to close the broadcast.");
+                        setActiveVideo(null);
+                      } else {
+                        setQuizError("🚨 INCORRECT CITIZEN REPORT! You failed the comprehension check. You are clearly not paying attention to state-mandated news. Returning you to the study materials in 3 seconds.");
+                        setTimeout(() => {
+                          setCancelStep(1);
+                          setQuizAnswer('');
+                          setQuizError('');
+                        }, 3000);
+                      }
+                    }}
+                    className="bg-gradient-to-r from-amber-600 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-white font-black py-3.5 px-6 rounded-lg shadow-[0_0_20px_rgba(245,158,11,0.3)] border-2 border-amber-500 hover:border-white transition-all transform hover:scale-105 uppercase tracking-widest flex-1 cursor-pointer"
+                  >
+                    🔍 Verify Answer
                   </button>
                 </div>
               </div>
