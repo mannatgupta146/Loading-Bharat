@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import { HelpCircle, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -11,6 +11,9 @@ const Layout = () => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
+  
+  const location = useLocation();
+  const isInternalPage = location.pathname === '/dashboard' || location.pathname === '/services';
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -63,7 +66,7 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-serif flex flex-col items-center">
       <header className="w-full bg-[#003366] text-white p-4 shadow-md border-b-4 border-orange-500">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-[#003366]">GOV</div>
             <div>
@@ -75,6 +78,23 @@ const Layout = () => {
             Status: <span className="text-red-400 font-bold">SERVERS UNDER STRESS</span>
           </div>
         </div>
+
+        {isInternalPage && (
+          <div className="max-w-4xl mx-auto mt-4 pt-4 border-t border-[#002244] flex gap-4">
+            <Link 
+              to="/dashboard" 
+              className={`px-4 py-2 font-bold rounded ${location.pathname === '/dashboard' ? 'bg-orange-500 text-white' : 'bg-[#002244] text-gray-300 hover:bg-[#001122]'}`}
+            >
+              National News
+            </Link>
+            <Link 
+              to="/services" 
+              className={`px-4 py-2 font-bold rounded ${location.pathname === '/services' ? 'bg-orange-500 text-white' : 'bg-[#002244] text-gray-300 hover:bg-[#001122]'}`}
+            >
+              Govt Services
+            </Link>
+          </div>
+        )}
       </header>
 
       <main className="w-full max-w-4xl flex-grow p-6">
